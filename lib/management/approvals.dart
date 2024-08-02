@@ -103,7 +103,7 @@ class _ApprovalsState extends State<Approvals> {
                             );
                           },
                           child: Text(
-                            'Purchase Approval',
+                            'Purchase',
                             style: TextStyle(
                               color: Colors.black87,
                               fontWeight: FontWeight.bold,
