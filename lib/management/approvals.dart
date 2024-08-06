@@ -3,6 +3,7 @@ import 'package:apparelapp/main.dart';
 import 'package:apparelapp/management/mainbudgetapproval.dart';
 import 'package:apparelapp/management/processorderapp_main.dart';
 import 'package:apparelapp/management/processprgapproval_main.dart';
+import 'package:apparelapp/management/processquote_Main.dart';
 import 'package:apparelapp/management/spl_requition_approvalMain.dart';
 import 'package:apparelapp/management/purchasequoteapproval.dart';
 import 'package:flutter/material.dart';
@@ -429,69 +430,69 @@ class _ApprovalsState extends State<Approvals> {
                     ],
                   ),
                 ),
-                // Card(
-                //   shadowColor: Colors.amber.withOpacity(0.4),
-                //   elevation: 10,
-                //   shape: RoundedRectangleBorder(
-                //     side: BorderSide(
-                //       color: Theme.of(context).colorScheme.outline,
-                //       style: BorderStyle.solid,
-                //     ),
-                //     borderRadius: const BorderRadius.all(Radius.circular(30)),
-                //   ),
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     crossAxisAlignment: CrossAxisAlignment.center,
-                //     children: <Widget>[
-                //       Expanded(
-                //         child: Center(
-                //           child: SizedBox(
-                //             width: dashboard.maxsizedboxwidth,
-                //             height: dashboard.minimagesizeboxheight,
-                //             child: IconButton(
-                //               color: Colors.teal[500],
-                //               icon: const Icon(Icons.business_center_rounded),
-                //               iconSize: 70,
-                //               onPressed: () {
-                //                 Navigator.push(
-                //                   context,
-                //                   MaterialPageRoute(
-                //                     builder: (context) =>
-                //                         SpecialRequitionApprovalPage(),
-                //                   ),
-                //                 );
-                //               },
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Padding(
-                //         padding: const EdgeInsets.only(bottom: 8.0),
-                //         child: TextButton(
-                //           onPressed: () {
-                //             Navigator.push(
-                //               context,
-                //               MaterialPageRoute(
-                //                 builder: (context) =>
-                //                     SpecialRequitionApprovalPage(),
-                //               ),
-                //             );
-                //           },
-                //           child: Text(
-                //             'ProcessQuotation Approval',
-                //             style: TextStyle(
-                //               color: Colors.black87,
-                //               fontWeight: FontWeight.bold,
-                //               fontFamily: 'roboto',
-                //               letterSpacing: 0,
-                //               fontSize: 10,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
+                Card(
+                  shadowColor: Colors.amber.withOpacity(0.4),
+                  elevation: 10,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outline,
+                      style: BorderStyle.solid,
+                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(30)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Center(
+                          child: SizedBox(
+                            width: dashboard.maxsizedboxwidth,
+                            height: dashboard.minimagesizeboxheight,
+                            child: IconButton(
+                              color: Colors.teal[500],
+                              icon: const Icon(Icons.business_center_rounded),
+                              iconSize: 70,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ProcessQuotationApprovalPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ProcessQuotationApprovalPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'ProcessQuotation Approval',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'roboto',
+                              letterSpacing: 0,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           )

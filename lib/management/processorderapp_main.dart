@@ -41,7 +41,7 @@ class ApiProcess {
 
 class ApiService {
   static const String apiUrl =
-      'http://13.232.84.26:8101/api/apiprocessordapproval';
+      'http://13.232.84.26:81/api/apiprocessordapproval';
 
   Future<List<ApiProcess>> fetchProcesses(String approved) async {
     final response = await http.get(Uri.parse('$apiUrl?approved=$approved'));
@@ -90,8 +90,19 @@ class _ProcessApprovalPageState extends State<ProcessApprovalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Process Order Approval List'),
-        backgroundColor: Colors.teal,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'ProcessOrder Main List',
+          style: TextStyle(color: Colors.teal),
+        ),
+        leading: IconButton(
+          color: Colors.teal,
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -101,15 +112,20 @@ class _ProcessApprovalPageState extends State<ProcessApprovalPage> {
               ElevatedButton(
                 onPressed: () => _fetchData('A'),
                 style: ElevatedButton.styleFrom(
-                  primary: selectedFilter == 'A' ? Colors.green : Colors.grey,
-                ),
+                    primary: selectedFilter == 'A' ? Colors.green : Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    )),
                 child: Text('Approved'),
               ),
               ElevatedButton(
                 onPressed: () => _fetchData('P'),
                 style: ElevatedButton.styleFrom(
-                  primary: selectedFilter == 'P' ? Colors.orange : Colors.grey,
-                ),
+                    primary:
+                        selectedFilter == 'P' ? Colors.orange : Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    )),
                 child: Text('Pending'),
               ),
             ],
@@ -147,11 +163,11 @@ class _ProcessApprovalPageState extends State<ProcessApprovalPage> {
                           leading: Container(
                             padding: EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.indigo.withOpacity(0.8),
+                              color: Colors.blue.withOpacity(0.7),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
-                              Icons.shopping_cart_checkout_sharp,
+                              Icons.shopping_cart_rounded,
                               color: Colors.white,
                             ),
                           ),

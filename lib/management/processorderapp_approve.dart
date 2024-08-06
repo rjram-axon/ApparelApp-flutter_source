@@ -62,7 +62,7 @@ class ApiService {
 
   Future<void> updateProcessApproval(String processorder, String status) async {
     final url =
-        'http://13.232.84.26:8101/api/updateprocessapproval/$processorder';
+        'http://13.232.84.26:81/api/updateprocessapproval/$processorder';
     final response = await http.put(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
@@ -181,7 +181,19 @@ class _ProcOrderListScreenState extends State<ProcOrderListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Proc Order List'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'ProcessOrder Items List',
+          style: TextStyle(color: Colors.teal),
+        ),
+        leading: IconButton(
+          color: Colors.teal,
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -276,7 +288,7 @@ class _ProcOrderListScreenState extends State<ProcOrderListScreen> {
                                   ),
                                   leading: Icon(
                                     Icons.add_to_photos_rounded,
-                                    color: Colors.blue[800],
+                                    color: Colors.blue[400],
                                   ),
                                   trailing: SizedBox.shrink(),
                                 ),
@@ -292,8 +304,10 @@ class _ProcOrderListScreenState extends State<ProcOrderListScreen> {
                           child: ElevatedButton(
                             onPressed: () => _updateApprovalStatus('A'),
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.green,
-                            ),
+                                primary: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                )),
                             child: Text('Approve'),
                           ),
                         ),
@@ -304,8 +318,10 @@ class _ProcOrderListScreenState extends State<ProcOrderListScreen> {
                           child: ElevatedButton(
                             onPressed: () => _updateApprovalStatus('P'),
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.red,
-                            ),
+                                primary: Colors.red,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                )),
                             child: Text('Reject'),
                           ),
                         ),
