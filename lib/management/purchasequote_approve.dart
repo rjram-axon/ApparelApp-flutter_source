@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:another_flushbar/flushbar.dart';
 import 'package:apparelapp/management/purchasequotedetails.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:another_flushbar/flushbar.dart';
-import 'package:image_picker/image_picker.dart'; // Import image_picker package
 
 class PurchaseQuotationEditPage extends StatefulWidget {
   final int quoteId;
@@ -20,10 +21,13 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
   List<PurchaseQuotationEdit> _purchaseQuotationEditList = [];
   bool _isLoading = true;
   String? _errorMessage;
-  bool _isApproved = false; // Track approval status
-  final TextEditingController _attachmentController = TextEditingController(); // Controller for the attachment text box
-  final ImagePicker _picker = ImagePicker(); // ImagePicker instance
-  File? _selectedImage; // To hold the selected image file
+  bool _isApproved = false;
+  final TextEditingController _attachmentController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
+  int? _selectedItemIndex;
+  String? _currentImagePath;
+  List<TextEditingController> _rateControllers = [];
 
   @override
   void initState() {
@@ -36,12 +40,11 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
       _isLoading = true;
       _errorMessage = null;
     });
+    final String apiUrl =
+        'http://13.232.84.26:81/api/apipurchasequoteedit?quoteid=${widget.quoteId}';
 
     try {
-      final response = await http.get(
-        Uri.parse(
-            'http://13.232.84.26:81/api/apipurchasequoteedit?quoteid=${widget.quoteId}'),
-      );
+      final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -55,10 +58,14 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
           }
           setState(() {
             _purchaseQuotationEditList = list;
-            // Set _isApproved based on the first item's approval status
+            _rateControllers = list
+                .map((item) =>
+                    TextEditingController(text: item.apprate.toString()))
+                .toList();
             if (list.isNotEmpty) {
-              _isApproved =
-                  list[0].approvedStatus == 'A'; // Assuming 'A' means approved
+              _isApproved = list[0].approvedStatus == 'A';
+              _currentImagePath = list[0].imgpath;
+              _attachmentController.text = _currentImagePath ?? 'No attachment';
             }
             _isLoading = false;
           });
@@ -87,12 +94,64 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
       if (pickedFile != null) {
         setState(() {
           _selectedImage = File(pickedFile.path);
-          _attachmentController.text = _selectedImage!.path.split('/').last;
+          _attachmentController.text = pickedFile.path.split('/').last;
+          _currentImagePath = pickedFile.path;
         });
       }
     } catch (e) {
       _showFlushbar(
         'Failed to pick image: $e',
+        Colors.red,
+        Icons.error,
+      );
+    }
+  }
+
+  void _updateRate() async {
+    if (_selectedItemIndex == null) return;
+
+    final selectedItem = _purchaseQuotationEditList[_selectedItemIndex!];
+    final apiUrl =
+        'http://13.232.84.26:81/api/updatepurchasequoteapproval/${widget.quoteId}';
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'QuoteDetid': selectedItem.quoteDetid,
+          'NewApprate': selectedItem.apprate,
+          'isApproved': _isApproved ? 'A' : 'P',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['success']) {
+          _showFlushbar(
+            'Rate updated successfully',
+            Colors.green,
+            Icons.check_circle,
+          );
+        } else {
+          _showFlushbar(
+            jsonData['message'] ?? 'Unknown error',
+            Colors.red,
+            Icons.error,
+          );
+        }
+      } else {
+        _showFlushbar(
+          'Failed to update rate: ${response.statusCode}',
+          Colors.red,
+          Icons.error,
+        );
+      }
+    } catch (e) {
+      _showFlushbar(
+        'Exception during API call: $e',
         Colors.red,
         Icons.error,
       );
@@ -110,7 +169,15 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'isApproved': action, // Set action to 'A' for approve and 'P' for reject
+          'QuoteDetid': _selectedItemIndex != null
+              ? _purchaseQuotationEditList[_selectedItemIndex!].quoteDetid
+              : null,
+          'NewApprate': _selectedItemIndex != null
+              ? double.tryParse(_purchaseQuotationEditList[_selectedItemIndex!]
+                  .apprate
+                  .toString())
+              : null,
+          'isApproved': action,
         }),
       );
 
@@ -127,8 +194,8 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
             _isApproved ? Colors.green : Colors.red,
             _isApproved ? Icons.check_circle : Icons.close,
           );
-          Future.delayed(Duration(seconds: 1), () {
-            Navigator.pop(context, true); // Return true to indicate success
+          Future.delayed(Duration(seconds: 2), () {
+            Navigator.pop(context, true);
           });
         } else {
           _showFlushbar(
@@ -170,6 +237,12 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
     )..show(context);
   }
 
+  void _onCardTap(int index) {
+    setState(() {
+      _selectedItemIndex = _selectedItemIndex == index ? null : index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +257,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
           color: Colors.teal,
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to the previous screen
+            Navigator.pop(context);
           },
         ),
       ),
@@ -214,33 +287,86 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Item: ${item.item}',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16.0),
-                                      ),
-                                      SizedBox(height: 8.0),
-                                      Text(
-                                          'Buy Ord No: ${item.buyordNo ?? 'N/A'}'),
-                                      Text('Color: ${item.color}'),
-                                      Text('Size: ${item.size}'),
-                                      Text('UOM: ${item.uom}'),
-                                      Text(
-                                          'Rate: ${item.rate.toStringAsFixed(2)}'),
-                                      Text(
-                                          'Approved Rate: ${item.apprate.toStringAsFixed(2)}'),
-                                      Text(
-                                          'Min Qty: ${item.minQty.toStringAsFixed(2)}'),
-                                      Text(
-                                          'Max Qty: ${item.maxQty.toStringAsFixed(2)}'),
-                                    ],
+                                child: InkWell(
+                                  onTap: () => _onCardTap(index),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Item: ${item.item}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16.0),
+                                        ),
+                                        SizedBox(height: 8.0),
+                                        Text(
+                                            'Buy Ord No: ${item.buyordNo ?? 'N/A'}'),
+                                        Text('Color: ${item.color}'),
+                                        Text('Size: ${item.size}'),
+                                        Text('UOM: ${item.uom}'),
+                                        Text(
+                                            'Rate: ${item.rate.toStringAsFixed(2)}'),
+                                        Text(
+                                            'Approved Rate: ${item.apprate.toStringAsFixed(2)}'),
+                                        Text(
+                                            'Min Qty: ${item.minQty.toStringAsFixed(2)}'),
+                                        if (_selectedItemIndex == index)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 16.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                TextField(
+                                                  controller:
+                                                      _rateControllers[index],
+                                                  keyboardType: TextInputType
+                                                      .numberWithOptions(
+                                                          decimal: true),
+                                                  decoration: InputDecoration(
+                                                    labelText:
+                                                        'Update Approved Rate',
+                                                    border:
+                                                        OutlineInputBorder(),
+                                                  ),
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      item.apprate =
+                                                          double.tryParse(
+                                                                  value) ??
+                                                              item.apprate;
+                                                    });
+                                                  },
+                                                ),
+                                                SizedBox(height: 8.0),
+                                                ElevatedButton(
+                                                  onPressed: _updateRate,
+                                                  child: Text('Update Rate'),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    primary: Colors.teal,
+                                                    onPrimary: Colors.white,
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 12.0,
+                                                            horizontal: 24.0),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              30.0),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
@@ -269,16 +395,21 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
                                   _handleApproval(_isApproved ? 'P' : 'A');
                                 },
                                 icon: Icon(
-                                  _isApproved ? Icons.undo : Icons.check,
+                                  _isApproved
+                                      ? Icons.close
+                                      : Icons.check_circle,
                                 ),
                                 label: Text(
-                                  _isApproved ? 'Revert Items' : 'Approve Items',
+                                  _isApproved
+                                      ? 'Revert Purchase Quotation'
+                                      : 'Approve Purchase Quotation',
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  primary: _isApproved ? Colors.red : Colors.green,
+                                  primary:
+                                      _isApproved ? Colors.red : Colors.green,
                                   onPrimary: Colors.white,
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 12.0, horizontal: 24.0),
+                                      vertical: 16.0, horizontal: 32.0),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30.0),
                                   ),
@@ -287,7 +418,6 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 16),
                       ],
                     ),
     );

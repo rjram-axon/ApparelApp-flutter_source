@@ -37,19 +37,22 @@ class PurchaseQuotation {
 
 class PurchaseQuotationEdit {
   final int quoteid;
+  final int quoteDetid;
   final String? buyordNo;
   final String item;
   final String color;
   final String size;
   final String uom;
   final double rate;
-  final double apprate;
+  double apprate;
   final double minQty;
   final double maxQty;
   final String approvedStatus;
+  final String imgpath;
 
   PurchaseQuotationEdit(
       {required this.quoteid,
+      required this.quoteDetid,
       this.buyordNo,
       required this.item,
       required this.color,
@@ -59,11 +62,13 @@ class PurchaseQuotationEdit {
       required this.apprate,
       required this.minQty,
       required this.maxQty,
-      required this.approvedStatus});
+      required this.approvedStatus,
+      required this.imgpath});
 
   factory PurchaseQuotationEdit.fromJson(Map<String, dynamic> json) {
     return PurchaseQuotationEdit(
       quoteid: json['Quoteid'],
+      quoteDetid: json['Process_Quote_detid'],
       buyordNo: json['BuyordNo'],
       item: json['Item'],
       color: json['Color'],
@@ -74,6 +79,7 @@ class PurchaseQuotationEdit {
       minQty: json['MinQty'].toDouble(),
       maxQty: json['MaxQty'].toDouble(),
       approvedStatus: json['ApprovedStatus'] ?? '',
+      imgpath: json['Image'] ?? '',
     );
   }
 }

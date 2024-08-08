@@ -29,13 +29,14 @@ class ProcessQuotation {
 
 class ProcessQuotationEdit {
   final int quoteid;
+  final int quoteDetid;
   final String? buyordNo;
   final String item;
   final String color;
   final String size;
   final String uom;
   final double rate;
-  final double apprate;
+  double apprate;
   final double minQty;
   final String approvedStatus;
 
@@ -43,6 +44,7 @@ class ProcessQuotationEdit {
 
   ProcessQuotationEdit(
       {required this.quoteid,
+      required this.quoteDetid,
       this.buyordNo,
       required this.item,
       required this.color,
@@ -57,6 +59,7 @@ class ProcessQuotationEdit {
   factory ProcessQuotationEdit.fromJson(Map<String, dynamic> json) {
     return ProcessQuotationEdit(
       quoteid: json['Quoteid'],
+      quoteDetid: json['Process_Quote_detid'],
       buyordNo: json['BuyordNo'],
       item: json['Item'],
       color: json['Color'],

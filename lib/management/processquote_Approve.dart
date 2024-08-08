@@ -6,6 +6,8 @@ import 'package:apparelapp/management/processquote_Itemdetails.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart'; // For file paths
+import 'package:open_file/open_file.dart'; // For opening files
 
 class ProcessQuotationEditPage extends StatefulWidget {
   final int quoteId;
@@ -108,9 +110,14 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
     }
   }
 
-  void _handleApproval(String action) async {
+  Future<void> _updateRate() async {
+    if (_selectedItemIndex == null) {
+      _showFlushbar('No item selected', Colors.red, Icons.error);
+      return;
+    }
+
     final apiUrl =
-        'http://13.232.84.26:81/api/updatepurchasequoteapproval/${widget.quoteId}';
+        'http://13.232.84.26:81/api/updateprocessquoteapproval/${widget.quoteId}';
 
     try {
       final response = await http.put(
@@ -119,9 +126,74 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
+          'QuoteDetid': _selectedItemIndex != null
+              ? _ProcessQuotationEditList[_selectedItemIndex!].quoteDetid
+              : null,
+          'NewApprate': _selectedItemIndex != null
+              ? double.tryParse(
+                  _rateController.text,
+                )
+              : null,
+          'isApproved': 'N', // No change in approval status
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['success']) {
+          _showFlushbar(
+            'Rate updated successfully',
+            Colors.green,
+            Icons.check_circle,
+          );
+          setState(() {
+            _ProcessQuotationEditList[_selectedItemIndex!].apprate =
+                double.parse(_rateController.text);
+          });
+        } else {
+          _showFlushbar(
+            jsonData['message'] ?? 'Unknown error',
+            Colors.red,
+            Icons.error,
+          );
+        }
+      } else {
+        _showFlushbar(
+          'Failed to update rate: ${response.statusCode}',
+          Colors.red,
+          Icons.error,
+        );
+      }
+    } catch (e) {
+      _showFlushbar(
+        'Exception during API call: $e',
+        Colors.red,
+        Icons.error,
+      );
+    }
+  }
+
+  Future<void> _handleApproval(String action) async {
+    final apiUrl =
+        'http://13.232.84.26:81/api/updateprocessquoteapproval/${widget.quoteId}';
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'QuoteDetid': _selectedItemIndex != null
+              ? _ProcessQuotationEditList[_selectedItemIndex!].quoteDetid
+              : null,
+          'NewApprate': _selectedItemIndex != null
+              ? double.tryParse(
+                  _rateController.text,
+                )
+              : null,
           'isApproved':
               action, // Set action to 'A' for approve and 'P' for reject
-          'imgpath': _currentImagePath, // Include the image path
         }),
       );
 
@@ -151,6 +223,40 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
       } else {
         _showFlushbar(
           'Failed to update Purchase Quotation approval: ${response.statusCode}',
+          Colors.red,
+          Icons.error,
+        );
+      }
+    } catch (e) {
+      _showFlushbar(
+        'Exception during API call: $e',
+        Colors.red,
+        Icons.error,
+      );
+    }
+  }
+
+  Future<void> _viewAttachment() async {
+    if (_currentImagePath == null) {
+      _showFlushbar('No attachment available', Colors.red, Icons.error);
+      return;
+    }
+
+    final String apiUrl = 'http://13.232.84.26:81/$_currentImagePath';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+        final tempDir = await getTemporaryDirectory();
+        final file =
+            File('${tempDir.path}/${_currentImagePath!.split('/').last}');
+        await file.writeAsBytes(bytes);
+        OpenFile.open(file.path);
+      } else {
+        _showFlushbar(
+          'Failed to load attachment: ${response.statusCode}',
           Colors.red,
           Icons.error,
         );
@@ -284,9 +390,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
                                                 ),
                                                 SizedBox(height: 8.0),
                                                 ElevatedButton(
-                                                  onPressed: () {
-                                                    // _updateApprovedRate(index);
-                                                  },
+                                                  onPressed: _updateRate,
                                                   child: Text('Update Rate'),
                                                   style:
                                                       ElevatedButton.styleFrom(
@@ -324,9 +428,18 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
                                 readOnly: true,
                                 decoration: InputDecoration(
                                   labelText: 'Attachment',
-                                  suffixIcon: IconButton(
-                                    icon: Icon(Icons.attach_file),
-                                    onPressed: _pickImage,
+                                  suffixIcon: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.attach_file),
+                                        onPressed: _pickImage,
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.remove_red_eye),
+                                        onPressed: _viewAttachment,
+                                      ),
+                                    ],
                                   ),
                                   border: OutlineInputBorder(),
                                 ),

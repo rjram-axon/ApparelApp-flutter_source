@@ -97,7 +97,7 @@ class _ProcessQuotationApprovalPageState
         elevation: 0,
         backgroundColor: Colors.white,
         title: const Text(
-          'Purchase Quotation Approval',
+          'Process Quotation Approval',
           style: TextStyle(color: Colors.teal),
         ),
         leading: IconButton(
