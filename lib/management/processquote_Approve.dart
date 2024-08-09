@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart'; // For file paths
 import 'package:open_file/open_file.dart'; // For opening files
+import 'package:path/path.dart' as p;
 
 class ProcessQuotationEditPage extends StatefulWidget {
   final int quoteId;
@@ -39,6 +40,17 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
     fetchData();
   }
 
+  void _setAttachment(String? imagePath) {
+    _currentImagePath = imagePath;
+
+    if (_currentImagePath != null) {
+      String filename = p.basename(_currentImagePath!);
+      _attachmentController.text = filename;
+    } else {
+      _attachmentController.text = 'No attachment';
+    }
+  }
+
   Future<void> fetchData() async {
     setState(() {
       _isLoading = true;
@@ -66,10 +78,11 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
             if (list.isNotEmpty) {
               _isApproved =
                   list[0].approvedStatus == 'A'; // Assuming 'A' means approved
+
               // Set the image path if available
-              _currentImagePath = list[0].imgpath;
-              _attachmentController.text = _currentImagePath ?? 'No attachment';
+              _setAttachment(list[0].imgpath);
             }
+
             _isLoading = false;
           });
         } else {
@@ -87,26 +100,6 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
         _errorMessage =
             'Failed to connect to the server. Please check your internet connection.';
       });
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-          _attachmentController.text = pickedFile.path.split('/').last;
-          _currentImagePath = pickedFile.path;
-        });
-      }
-    } catch (e) {
-      _showFlushbar(
-        'Failed to pick image: $e',
-        Colors.red,
-        Icons.error,
-      );
     }
   }
 
@@ -242,17 +235,18 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
       return;
     }
 
-    final String apiUrl = 'http://13.232.84.26:81/$_currentImagePath';
+    // Full URL using the base path and file name
+    final String fileUrl = 'http://13.232.84.26:8103/$_currentImagePath';
 
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/${p.basename(_currentImagePath!)}');
+
+      // Download the file from the URL
+      final response = await http.get(Uri.parse(fileUrl));
 
       if (response.statusCode == 200) {
-        final bytes = response.bodyBytes;
-        final tempDir = await getTemporaryDirectory();
-        final file =
-            File('${tempDir.path}/${_currentImagePath!.split('/').last}');
-        await file.writeAsBytes(bytes);
+        await file.writeAsBytes(response.bodyBytes);
         OpenFile.open(file.path);
       } else {
         _showFlushbar(
@@ -263,7 +257,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
       }
     } catch (e) {
       _showFlushbar(
-        'Exception during API call: $e',
+        'Exception while opening the file: $e',
         Colors.red,
         Icons.error,
       );
@@ -431,10 +425,10 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
                                   suffixIcon: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      IconButton(
-                                        icon: Icon(Icons.attach_file),
-                                        onPressed: _pickImage,
-                                      ),
+                                      // IconButton(
+                                      //   icon: Icon(Icons.attach_file),
+                                      //   onPressed: _pickImage,
+                                      // ),
                                       IconButton(
                                         icon: Icon(Icons.remove_red_eye),
                                         onPressed: _viewAttachment,

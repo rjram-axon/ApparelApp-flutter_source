@@ -6,6 +6,9 @@ import 'package:apparelapp/management/purchasequotedetails.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class PurchaseQuotationEditPage extends StatefulWidget {
   final int quoteId;
@@ -40,6 +43,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
       _isLoading = true;
       _errorMessage = null;
     });
+
     final String apiUrl =
         'http://13.232.84.26:81/api/apipurchasequoteedit?quoteid=${widget.quoteId}';
 
@@ -87,20 +91,33 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
     }
   }
 
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _viewAttachment() async {
+    if (_currentImagePath == null) {
+      _showFlushbar('No attachment available', Colors.red, Icons.error);
+      return;
+    }
 
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-          _attachmentController.text = pickedFile.path.split('/').last;
-          _currentImagePath = pickedFile.path;
-        });
+    final String fileUrl = 'http://13.232.84.26:81/$_currentImagePath';
+
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/${p.basename(_currentImagePath!)}');
+
+      final response = await http.get(Uri.parse(fileUrl));
+
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+        OpenFile.open(file.path);
+      } else {
+        _showFlushbar(
+          'Failed to load attachment: ${response.statusCode}',
+          Colors.red,
+          Icons.error,
+        );
       }
     } catch (e) {
       _showFlushbar(
-        'Failed to pick image: $e',
+        'Exception while opening the file: $e',
         Colors.red,
         Icons.error,
       );
@@ -243,6 +260,18 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
     });
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        _attachmentController.text = p.basename(pickedFile.path);
+        _currentImagePath = p.basename(pickedFile.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -262,17 +291,11 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
         ),
       ),
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
+          ? Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Text(_errorMessage!),
-                )
+              ? Center(child: Text(_errorMessage!))
               : _purchaseQuotationEditList.isEmpty
-                  ? Center(
-                      child: Text('No data available.'),
-                    )
+                  ? Center(child: Text('No data available.'))
                   : Column(
                       children: [
                         Expanded(
@@ -382,9 +405,18 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
                                 readOnly: true,
                                 decoration: InputDecoration(
                                   labelText: 'Attachment',
-                                  suffixIcon: IconButton(
-                                    icon: Icon(Icons.attach_file),
-                                    onPressed: _pickImage,
+                                  suffixIcon: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // IconButton(
+                                      //   icon: Icon(Icons.attach_file),
+                                      //   onPressed: _pickImage,
+                                      // ),
+                                      IconButton(
+                                        icon: Icon(Icons.remove_red_eye),
+                                        onPressed: _viewAttachment,
+                                      ),
+                                    ],
                                   ),
                                   border: OutlineInputBorder(),
                                 ),
