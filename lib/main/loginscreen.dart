@@ -27,6 +27,7 @@ class _MyLoginState extends State<MyLogin> {
   late FocusNode passwordFocusNode;
   late FocusNode finyearFocusNode;
   String defitem = '--Select Financial Year--';
+  List<String> item = ["-- Select Account Type--", "LAN", "WAN"];
 
   String dropdownValue = items.first;
   final _storage = const FlutterSecureStorage();
@@ -192,8 +193,8 @@ class _MyLoginState extends State<MyLogin> {
     userFocusNode.dispose();
     passwordFocusNode.dispose();
     finyearFocusNode.dispose();
-    items.clear();
-    items.add("--Select Account Type--");
+    item.clear();
+    item.add("--Select Account Type--");
     //items.removeRange(1, items.length - 1);
     exit(0);
   }
@@ -354,8 +355,8 @@ class _MyLoginState extends State<MyLogin> {
               width: 380,
               child: TextButton(
                   onPressed: () {
-                    items.clear();
-                    items.add("--Select Account Type--");
+                    item.clear();
+                    item.add("--Select Account Type--");
                     Navigator.push(
                         context,
                         MaterialPageRoute(

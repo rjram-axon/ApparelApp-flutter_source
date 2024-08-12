@@ -152,51 +152,55 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              // Carousel slider with automatic scrolling
-              CarouselSlider.builder(
-                carouselController: _carouselController,
-                itemCount: _cardContents.length,
-                itemBuilder: (context, index, realIndex) {
-                  return buildCard(_cardContents[index]);
-                },
-                options: CarouselOptions(
-                  height: 220.0, // Height for the carousel
-                  autoPlay: true,
-                  autoPlayInterval: Duration(seconds: 4),
-                  enlargeCenterPage: true,
-                  viewportFraction: 0.8,
-                  onPageChanged: (index, reason) {
-                    setState(() {
-                      _current = index;
-                    });
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Carousel slider with automatic scrolling
+                CarouselSlider.builder(
+                  carouselController: _carouselController,
+                  itemCount: _cardContents.length,
+                  itemBuilder: (context, index, realIndex) {
+                    return buildCard(_cardContents[index]);
+                  },
+                  options: CarouselOptions(
+                    height: 220.0, // Height for the carousel
+                    autoPlay: true,
+                    autoPlayInterval: Duration(seconds: 4),
+                    enlargeCenterPage: true,
+                    viewportFraction: 0.8,
+                    onPageChanged: (index, reason) {
+                      setState(() {
+                        _current = index;
+                      });
+                    },
+                  ),
+                ),
+                SizedBox(height: 16.0),
+                // Smooth page indicator
+                AnimatedSmoothIndicator(
+                  activeIndex: _current,
+                  count: _cardContents.length,
+                  effect: ExpandingDotsEffect(
+                    expansionFactor: 2,
+                    activeDotColor: Colors.teal,
+                    dotHeight: 8,
+                    dotWidth: 8,
+                  ),
+                  onDotClicked: (index) {
+                    _carouselController.animateToPage(index);
                   },
                 ),
-              ),
-              SizedBox(height: 16.0),
-              // Smooth page indicator
-              AnimatedSmoothIndicator(
-                activeIndex: _current,
-                count: _cardContents.length,
-                effect: ExpandingDotsEffect(
-                  expansionFactor: 2,
-                  activeDotColor: Colors.teal,
-                  dotHeight: 8,
-                  dotWidth: 8,
-                ),
-                onDotClicked: (index) {
-                  _carouselController.animateToPage(index);
-                },
-              ),
-              Expanded(
-                child: GridView.count(
-                    // shrinkWrap: true,
-                    // physics: NeverScrollableScrollPhysics(),
+                SizedBox(height: 16.0),
+                // GridView with scrollable behavior
+                GridView.count(
                     crossAxisSpacing: 3, //10
                     mainAxisSpacing: 20, //5
                     crossAxisCount: 2,
                     padding: const EdgeInsets.all(10.0),
+                    physics:
+                        NeverScrollableScrollPhysics(), // Prevents GridView from scrolling independently
+                    shrinkWrap:
+                        true, // Ensures GridView takes only the required space
                     children: <Widget>[
                       Card(
                         shadowColor: Colors.amber.withOpacity(0.4),
@@ -705,8 +709,8 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                         ),
                       ),
                     ]),
-              ),
-            ],
+              ],
+            ),
           ),
           drawer: Drawer(
             // Add a ListView to the drawer. This ensures the user can scroll
