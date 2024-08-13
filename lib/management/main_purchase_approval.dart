@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/purchase_approval_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -30,20 +31,19 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
   Future<void> fetchData(String filter) async {
     setState(() {
       isLoading = true; // Start loading
+      orders.clear(); // Clear the orders list before fetching new data
+      uniquePOs.clear(); // Clear the unique POs list
     });
 
     final approvalStatus = filter == 'Approved' ? 'Y' : 'N';
     final url =
-        'http://13.232.84.26:81/api/apipurchaseapproval?isapproved=$approvalStatus';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apipurchaseapproval?isapproved=$approvalStatus';
 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         final List<dynamic> purchases = responseData['purchases'];
-
-        orders.clear();
-        uniquePOs.clear();
 
         for (var purchaseData in purchases) {
           PurchaseOrder purchaseOrder = PurchaseOrder(
@@ -73,11 +73,27 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
         updateFilterCounts();
         // Fetch counts for both filters
         fetchCounts();
+
+        if (orders.isEmpty) {
+          // Show error message if no data is found
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No $filter orders found.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } else {
         throw Exception('Failed to load data');
       }
     } catch (e) {
       print('Error: $e');
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text('Error fetching data. Please try again.'),
+      //     backgroundColor: Colors.red,
+      //   ),
+      // );
     } finally {
       setState(() {
         isLoading = false; // Stop loading
@@ -87,9 +103,9 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
 
   Future<void> fetchCounts() async {
     final approvedUrl =
-        'http://13.232.84.26:81/api/apipurchaseapproval?isapproved=Y';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apipurchaseapproval?isapproved=Y';
     final pendingUrl =
-        'http://13.232.84.26:81/api/apipurchaseapproval?isapproved=N';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apipurchaseapproval?isapproved=N';
 
     try {
       final approvedResponse = await http.get(Uri.parse(approvedUrl));
@@ -208,106 +224,110 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
                       size: 50.0, // Set the size of the loading animation
                     ), // Loading indicator
                   )
-                : ListView.builder(
-                    itemCount: uniquePOs.length,
-                    itemBuilder: (context, index) {
-                      final poNumber = uniquePOs[index];
-                      final poOrders = orders
-                          .where((order) => order.purOrdNo == poNumber)
-                          .toList();
-                      final order = poOrders.first;
+                : orders.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No $selectedFilter orders found.',
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: uniquePOs.length,
+                        itemBuilder: (context, index) {
+                          final poNumber = uniquePOs[index];
+                          final poOrders = orders
+                              .where((order) => order.purOrdNo == poNumber)
+                              .toList();
+                          final order = poOrders.first;
 
-                      return Card(
-                        elevation: 5,
-                        margin:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          contentPadding: EdgeInsets.all(16),
-                          leading: Container(
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.indigo.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(10),
+                          return Card(
+                            elevation: 5,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                            child: const Icon(
-                              Icons.shopping_bag,
-                              color: Colors.white,
+                            child: ListTile(
+                              contentPadding: EdgeInsets.all(16),
+                              leading: Container(
+                                padding: EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.indigo.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.shopping_bag,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              title: Text(
+                                "PO No: ${order.purOrdNo}",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "Order Date: ${order.orderDate.toString().substring(0, 10)}",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "Reference: ${order.reference != null && order.reference.length >= 10 ? order.reference.substring(0, 10) : order.reference}",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Supplier: ${order.supplier}",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PurchaseOrderDetail(
+                                      poNumber: order.purOrdNo,
+                                      orders: orders,
+                                      onApprovalStatusChanged:
+                                          (orderNo, status) {
+                                        _handleApprovalStatusChange(
+                                            orderNo, status);
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                          title: Text(
-                            "PO No: ${order.purOrdNo}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 8),
-                              Text(
-                                "Order Date: ${order.orderDate.toString().substring(0, 10)}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Reference: ${order.reference != null && order.reference.length >= 10 ? order.reference.substring(0, 10) : order.reference}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Supplier: ${order.supplier}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PurchaseOrderDetail(
-                                  poNumber: order.purOrdNo,
-                                  orders: orders,
-                                  onApprovalStatusChanged: (orderNo, status) {
-                                    _handleApprovalStatusChange(
-                                        orderNo, status);
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
     );
   }
 
-  void _handleApprovalStatusChange(String orderNo, String newStatus) {
+  void _handleApprovalStatusChange(String orderNo, String status) {
     setState(() {
-      orders.forEach((order) {
-        if (order.orderNo == orderNo) {
-          order.approved = newStatus;
-        }
-      });
-
-      // Update filter counts
-      updateFilterCounts();
+      orders
+          .where((order) => order.purOrdNo == orderNo)
+          .forEach((order) => order.approved = status);
+      updateFilterCounts(); // Update counts after approval status changes
     });
   }
 }

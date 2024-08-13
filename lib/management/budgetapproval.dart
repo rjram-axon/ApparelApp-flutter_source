@@ -1,6 +1,7 @@
 import 'package:apparelapp/axondatamodal/axonfitrationmodal/budgerapprovalmainlist.dart';
 import 'package:apparelapp/axonlibrary/axonbudgetlibrary.dart';
 import 'package:apparelapp/axonlibrary/axonfunctions.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:apparelapp/axondatamodal/budgetapprovalmainlistmodal.dart';
@@ -308,7 +309,8 @@ class _BudgetApprovalState extends State<BudgetApproval> {
 
     try {
       var response = await http.put(
-        Uri.parse('http://13.232.84.26:81/api/updatebudgetapproval'),
+        Uri.parse(
+            'http://${AppConfig().host}:${AppConfig().port}/api/updatebudgetapproval'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -429,7 +431,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
     // var url =
     //     '$hostname:$port/api/apibudgetapproval?orderno=$forderno&styleid=$fstyleid';
     var url =
-        'http://13.232.84.26:81/api/apibudgetapproval?orderno=$forderno&styleid=$fstyleid';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apibudgetapproval?orderno=$forderno&styleid=$fstyleid';
 
     var body = '''''';
     String length = body.length.toString();
@@ -508,7 +510,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
     };
 
     //dynamic responsedata;
-    var url = '$hostname:$port/api/apibudgetapproval';
+    var url = '${AppConfig().host}:${AppConfig().port}/api/apibudgetapproval';
     var body = json.encode(costdetails);
     String length = body.length.toString();
     var headers = {
@@ -579,7 +581,8 @@ class _BudgetApprovalState extends State<BudgetApproval> {
     };
 
     //dynamic responsedata;
-    var url = 'http://13.232.84.26:81/api/apibudgetapproval';
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apibudgetapproval';
     var body = json.encode(costdetails);
     String length = body.length.toString();
     var headers = {
