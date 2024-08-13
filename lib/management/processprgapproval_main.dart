@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/processprgapproval_approve.dart';
 import 'package:apparelapp/management/processprgapproval_details.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +69,7 @@ class _ProcessProgramApprovalPageState
   Future<List<ApiProcessPrgAppdetails>> fetchApprovalData(
       String approved) async {
     final response = await http.get(Uri.parse(
-        'http://13.232.84.26:81/api/apiprocessprgapproval?approved=$approved'));
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessprgapproval?approved=$approved'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -96,7 +97,7 @@ class _ProcessProgramApprovalPageState
   Future<List<ApiProcessPrgAppOverlayGrouped>> fetchOverlayData(
       int id, String approved) async {
     final response = await http.get(Uri.parse(
-        'http://13.232.84.26:81/api/apiprocessprgappItem?id=$id&approved=$approved'));
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessprgappItem?id=$id&approved=$approved'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

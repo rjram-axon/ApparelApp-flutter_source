@@ -63,7 +63,7 @@ class ApiService {
 
   Future<void> updateProcessApproval(String processorder, String status) async {
     final url =
-        'http://13.232.84.26:81/api/updateprocessapproval/$processorder';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updateprocessapproval/$processorder';
     final response = await http.put(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},

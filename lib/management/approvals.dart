@@ -221,7 +221,7 @@ class _ApprovalsState extends State<Approvals> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MainBudgetApproval(),
+                                builder: (context) => ProcessApprovalPage(),
                               ),
                             );
                           },

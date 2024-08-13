@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/processprgapproval_main.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -71,7 +72,7 @@ class _ProcessPrgAppEditPageState extends State<ProcessPrgAppEditPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://13.232.84.26:81/api/apiprocessprgappItemedit?id=${widget.prodprgid}'),
+            'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessprgappItemedit?id=${widget.prodprgid}'),
       );
 
       if (response.statusCode == 200) {
@@ -111,7 +112,7 @@ class _ProcessPrgAppEditPageState extends State<ProcessPrgAppEditPage> {
   void _handleApprove(String action) async {
     String prodPrgNo = _processPrgEditList.first.prodprgno;
     String apiUrl =
-        'http://13.232.84.26:81/api/updateprocessprgapproval/$prodPrgNo';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updateprocessprgapproval/$prodPrgNo';
 
     String requestBody = jsonEncode({
       "Approved": action, // Set action to "Y" for approve and "N" for revert

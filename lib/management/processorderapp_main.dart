@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/processorderapp_approve.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -40,8 +41,8 @@ class ApiProcess {
 }
 
 class ApiService {
-  static const String apiUrl =
-      'http://13.232.84.26:81/api/apiprocessordapproval';
+  static String apiUrl =
+      'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessordapproval';
 
   Future<List<ApiProcess>> fetchProcesses(String approved) async {
     final response = await http.get(Uri.parse('$apiUrl?approved=$approved'));

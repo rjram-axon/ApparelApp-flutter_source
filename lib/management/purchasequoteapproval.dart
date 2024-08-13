@@ -1,3 +1,4 @@
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/purchasequote_approve.dart';
 import 'package:apparelapp/management/purchasequotedetails.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,7 @@ class _PurchaseQuotationApprovalPageState
 
     final String status = _isApproved ? 'A' : 'P';
     final String apiUrl =
-        'http://13.232.84.26:81/api/apipurchasequoteapproval?isapproved=$status';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apipurchasequoteapproval?isapproved=$status';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));

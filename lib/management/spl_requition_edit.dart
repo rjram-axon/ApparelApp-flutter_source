@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/splrequitionappDetails.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -37,7 +38,7 @@ class _SpecialRequitionEditPageState extends State<SpecialRequitionEditPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://13.232.84.26:81/api/apisplreqappItemedit?reqid=${widget.reqId}'),
+            'http://${AppConfig().host}:${AppConfig().port}/api/apisplreqappItemedit?reqid=${widget.reqId}'),
       );
 
       if (response.statusCode == 200) {
@@ -78,7 +79,7 @@ class _SpecialRequitionEditPageState extends State<SpecialRequitionEditPage> {
 
   void _handleApproval(String action) async {
     final apiUrl =
-        'http://13.232.84.26:81/api/updatesplreqapproval/${widget.jobordno}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updatesplreqapproval/${widget.jobordno}';
 
     try {
       final response = await http.put(

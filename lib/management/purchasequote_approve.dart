@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/purchasequotedetails.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -45,7 +46,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
     });
 
     final String apiUrl =
-        'http://13.232.84.26:81/api/apipurchasequoteedit?quoteid=${widget.quoteId}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apipurchasequoteedit?quoteid=${widget.quoteId}';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -129,7 +130,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
 
     final selectedItem = _purchaseQuotationEditList[_selectedItemIndex!];
     final apiUrl =
-        'http://13.232.84.26:81/api/updatepurchasequoteapproval/${widget.quoteId}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updatepurchasequoteapproval/${widget.quoteId}';
 
     try {
       final response = await http.put(
@@ -177,7 +178,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
 
   void _handleApproval(String action) async {
     final apiUrl =
-        'http://13.232.84.26:81/api/updatepurchasequoteapproval/${widget.quoteId}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updatepurchasequoteapproval/${widget.quoteId}';
 
     try {
       final response = await http.put(

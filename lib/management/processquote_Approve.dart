@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/processquote_Itemdetails.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -57,7 +58,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
       _errorMessage = null;
     });
     final String apiUrl =
-        'http://13.232.84.26:81/api/apiprocessquoteapprovaledit?quoteid=${widget.quoteId}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessquoteapprovaledit?quoteid=${widget.quoteId}';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -110,7 +111,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
     }
 
     final apiUrl =
-        'http://13.232.84.26:81/api/updateprocessquoteapproval/${widget.quoteId}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updateprocessquoteapproval/${widget.quoteId}';
 
     try {
       final response = await http.put(
@@ -168,7 +169,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
 
   Future<void> _handleApproval(String action) async {
     final apiUrl =
-        'http://13.232.84.26:81/api/updateprocessquoteapproval/${widget.quoteId}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/updateprocessquoteapproval/${widget.quoteId}';
 
     try {
       final response = await http.put(
