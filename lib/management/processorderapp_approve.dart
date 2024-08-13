@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
@@ -44,7 +45,7 @@ class ApparelProcOrdEditOutItemDet {
 
 class ApiService {
   final String baseUrl =
-      'http://13.232.84.26:8101/api/appparelprocordereditoutitemdet';
+      'http://${AppConfig().host}:${AppConfig().port}/api/appparelprocordereditoutitemdet';
 
   Future<List<ApparelProcOrdEditOutItemDet>> fetchProcOrders(int procid) async {
     final response = await http.get(Uri.parse('$baseUrl?procid=$procid'));
