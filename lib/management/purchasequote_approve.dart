@@ -98,7 +98,8 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
       return;
     }
 
-    final String fileUrl = 'http://13.232.84.26:81/$_currentImagePath';
+    final String fileUrl =
+        'http://${AppConfig().host}:${AppConfig().port}/$_currentImagePath';
 
     try {
       final tempDir = await getTemporaryDirectory();

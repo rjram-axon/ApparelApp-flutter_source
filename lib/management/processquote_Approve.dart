@@ -237,7 +237,8 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
     }
 
     // Full URL using the base path and file name
-    final String fileUrl = 'http://13.232.84.26:8103/$_currentImagePath';
+    final String fileUrl =
+        'http://${AppConfig().host}:${AppConfig().port}/$_currentImagePath';
 
     try {
       final tempDir = await getTemporaryDirectory();

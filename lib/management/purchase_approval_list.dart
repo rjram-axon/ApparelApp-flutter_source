@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:another_flushbar/flushbar.dart';
@@ -333,7 +334,7 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
         if (order.approved != newStatus) {
           var response = await http.put(
             Uri.parse(
-                'http://13.232.84.26:81/api/updatepurchaseapproval/${order.purOrdNo}'),
+                'http://${AppConfig().host}:${AppConfig().port}/api/updatepurchaseapproval/${order.purOrdNo}'),
             //'http://192.168.1.50:81/api/apipurchaseapproval/${order.purOrdNo}'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',

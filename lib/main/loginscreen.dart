@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/main/drawerpage.dart';
 import 'package:apparelapp/main/mainscreen.dart';
 import 'package:http/http.dart' as http;
@@ -113,7 +114,7 @@ class _MyLoginState extends State<MyLogin> {
     // var url =
     // '$hostname:$port/api/apilogin?username=${usernamecontroller.text}&password=${passwordcontroller.text}';
     var url =
-        'http://13.232.84.26:81/api/apilogin?username=${usernamecontroller.text}&password=${passwordcontroller.text}';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apilogin?username=${usernamecontroller.text}&password=${passwordcontroller.text}';
     var body =
         '''{username:"${usernamecontroller.text}",password:"${passwordcontroller.text}"''';
     String length = body.length.toString();

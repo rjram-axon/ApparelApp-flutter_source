@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/management/spl_requition_edit.dart';
 import 'package:apparelapp/management/splrequitionappDetails.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class _SpecialRequitionApprovalPageState
   Future<List<ApiSplReqdetails>> fetchSplReqDetails(String isApproved) async {
     final response = await http.get(
       Uri.parse(
-          'http://13.232.84.26:81/api/apisplreqapproval?isapproved=$isApproved'),
+          'http://${AppConfig().host}:${AppConfig().port}/api/apisplreqapproval?isapproved=$isApproved'),
     );
 
     if (response.statusCode == 200) {

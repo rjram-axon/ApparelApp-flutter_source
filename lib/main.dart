@@ -1,4 +1,5 @@
 import 'package:apparelapp/axondatamodal/axonfitrationmodal/orderwisestockfilter.dart';
+import 'package:apparelapp/main/mainscreen.dart';
 import 'package:apparelapp/stock/groupwisestock.dart';
 import 'package:apparelapp/supplieroutstanding/mainoutstanding.dart';
 import 'package:flutter/material.dart';
@@ -74,8 +75,12 @@ class _AppPageState extends State<AppPage> {
         if (value > 1) {
           timer.cancel();
           if (internetconnection == true) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const MyLogin()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const MainScreen(
+                          head: 'Welcome to Apparel',
+                        )));
             /* Navigator.push(
                 context,
                 MaterialPageRoute(
