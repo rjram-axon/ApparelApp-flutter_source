@@ -3,6 +3,7 @@ import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/main/loginscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 import '../axonlibrary/axonfilehandling.dart';
 import '../axonlibrary/axongeneral.dart';
@@ -29,15 +30,23 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      company.text = prefs.getString('company') ?? '';
-      host.text = prefs.getString('host') ?? '';
-      port.text = prefs.getString('port') ?? '';
-      finyear.text = prefs.getString('finyear') ?? '';
+    String? companyName = prefs.getString('company');
 
-      // Set the host and port in AppConfig when loading the data
-      AppConfig().setConfig(host: host.text, port: port.text);
-    });
+    if (companyName != null && companyName.isNotEmpty) {
+      company.text = companyName;
+
+      // Load host and port based on the company name
+      String? configJson = prefs.getString('config_${company.text}');
+      if (configJson != null) {
+        Map<String, dynamic> configData = json.decode(configJson);
+        host.text = configData['host'] ?? '';
+        port.text = configData['port'] ?? '';
+
+        // Set the host and port in AppConfig when loading the data
+        AppConfig()
+            .setConfig(company: company.text, host: host.text, port: port.text);
+      }
+    }
   }
 
   Future<void> _savedata() async {
@@ -54,8 +63,18 @@ class _MainScreenState extends State<MainScreen> {
       await prefs.setString('port', port.text);
       await prefs.setString('finyear', finyear.text);
 
+      // Retrieve existing company names or create a new list
+      List<String> companies = prefs.getStringList('companyNames') ?? [];
+      if (!companies.contains(company.text)) {
+        companies.add(company.text);
+      }
+
+      // Save the updated list of company names
+      await prefs.setStringList('companyNames', companies);
+
       // Set the host and port in AppConfig after saving the data
-      AppConfig().setConfig(host: host.text, port: port.text);
+      AppConfig()
+          .setConfig(company: company.text, host: host.text, port: port.text);
 
       showDialog<String>(
         context: context,
@@ -83,15 +102,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> delete() async {
-    final cd = ConfigurationStorage();
-    String result = await cd.deletefile();
-
-    // Delete data from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Delete the specific company configuration
+    await prefs.remove('config_${company.text}');
+
+    // Optionally, clear the company name
     await prefs.remove('company');
-    await prefs.remove('host');
-    await prefs.remove('port');
-    await prefs.remove('finyear');
 
     // Clear the TextEditingController values to reflect the reset
     setState(() {
@@ -101,22 +118,19 @@ class _MainScreenState extends State<MainScreen> {
       finyear.clear();
     });
 
-    if (result.isNotEmpty) {
-      showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Apparel Message'),
-          content:
-              const Text('All Configurations are deleted successfully...!'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Apparel Message'),
+        content: const Text('All Configurations are deleted successfully...!'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'OK'),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -183,18 +197,6 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                // SizedBox(
-                //   width: 380,
-                //   child: TextField(
-                //     controller: finyear,
-                //     textCapitalization: TextCapitalization.none,
-                //     decoration: const InputDecoration(
-                //       border: OutlineInputBorder(),
-                //       labelText: 'Financial Year',
-                //     ),
-                //   ),
-                // ),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 30,

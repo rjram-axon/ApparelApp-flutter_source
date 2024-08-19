@@ -1,5 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:apparelapp/axonlibrary/axongeneral.dart';
+import 'package:apparelapp/axonlibrary/axonjson.dart';
+import 'package:apparelapp/axonlibrary/axonmessage.dart';
 import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/main/drawerpage.dart';
 import 'package:apparelapp/main/mainscreen.dart';
@@ -8,11 +10,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../axonlibrary/axonfilehandling.dart';
-import '../axonlibrary/axongeneral.dart';
-import '../axonlibrary/axonjson.dart';
-import '../axonlibrary/axonmessage.dart';
-import '../main.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({super.key});
@@ -22,32 +19,16 @@ class MyLogin extends StatefulWidget {
 }
 
 class _MyLoginState extends State<MyLogin> {
-  TextEditingController usernamecontroller = TextEditingController();
-  TextEditingController passwordcontroller = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   late FocusNode userFocusNode;
   late FocusNode passwordFocusNode;
-  late FocusNode finyearFocusNode;
-  String defitem = '--Select Financial Year--';
-  List<String> item = ["-- Select Account Type--", "LAN", "WAN"];
+  late FocusNode accountFocusNode;
+  String defItem = '--Select Account--';
+  List<String> items = ["-- Select Account--"];
+  String dropdownValue = "-- Select Account--";
 
-  String dropdownValue = items.first;
-  final _storage = const FlutterSecureStorage();
-  Future<void> loadSavedCredentials() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      usernamecontroller.text = prefs.getString('username') ?? '';
-      passwordcontroller.text = prefs.getString('password') ?? '';
-      rememberMe = prefs.getBool('rememberMe') ?? false;
-    });
-  }
-
-// Function to save login credentials
-  Future<void> saveCredentials() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', usernamecontroller.text);
-    await prefs.setString('password', passwordcontroller.text);
-    await prefs.setBool('rememberMe', rememberMe);
-  }
+  bool rememberMe = false;
 
   @override
   void initState() {
@@ -55,45 +36,55 @@ class _MyLoginState extends State<MyLogin> {
     loadSavedCredentials();
     userFocusNode = FocusNode();
     passwordFocusNode = FocusNode();
-    finyearFocusNode = FocusNode();
-    loadconfig();
+    accountFocusNode = FocusNode();
+    loadConfig();
   }
 
-  Future<void> loadconfig() async {
-    var file = ConfigurationStorage();
-    var data = await file.readCounter();
-    if (data.isNotEmpty) {
-      //var datas = json.decode(data);
-      var datas = jsonDecode(data);
-      var config = Configdetail.fromJson(datas[0]);
-      configdetails.clear();
-      configdetails.add(config);
-      setState(() {
-        for (int i = 0; i < configdetails.length; i++) {
-          items.add(configdetails[i].finyear);
-        }
-      });
-    }
+  Future<void> loadSavedCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      usernameController.text = prefs.getString('username') ?? '';
+      passwordController.text = prefs.getString('password') ?? '';
+      rememberMe = prefs.getBool('rememberMe') ?? false;
+    });
+  }
+
+  Future<void> saveCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', usernameController.text);
+    await prefs.setString('password', passwordController.text);
+    await prefs.setBool('rememberMe', rememberMe);
+  }
+
+  Future<void> loadConfig() async {
+    AppConfig config = AppConfig();
+    List<Map<String, String>> allConfigs = await config.loadAllConfigs();
+
+    setState(() {
+      items.clear();
+      items.add("-- Select Account--");
+      for (var conf in allConfigs) {
+        items.add(conf['company']!);
+      }
+      if (items.length > 1) {
+        dropdownValue = items[1];
+        config.loadConfig(dropdownValue);
+      }
+    });
   }
 
   Future<void> loginclick() async {
-    if (usernamecontroller.text.toString() != "" &&
-        passwordcontroller.text.toString() != "") {
-      for (int i = 0; i < configdetails.length; i++) {
-        if (dropdownValue == configdetails[i].finyear) {
-          company = configdetails[i].company;
-          hostname = configdetails[i].host;
-          port = configdetails[i].port;
-          finyear = configdetails[i].finyear;
-        }
-      }
-      var data = await checklogin();
-      if (data.toString() != "") {
-        // If "Remember Me" is checked, save the credentials
+    if (usernameController.text.isNotEmpty &&
+        passwordController.text.isNotEmpty &&
+        dropdownValue != "-- Select Account--") {
+      AppConfig config = AppConfig();
+      await config.loadConfig(dropdownValue);
+
+      var data = await checkLogin();
+      if (data.isNotEmpty) {
         if (rememberMe) {
-          saveCredentials();
+          await saveCredentials();
         }
-        // Navigate to the next screen
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -101,23 +92,22 @@ class _MyLoginState extends State<MyLogin> {
         );
       }
     } else {
-      if (usernamecontroller.text.toString() == "") {
+      if (usernameController.text.isEmpty) {
         userFocusNode.requestFocus();
-      } else if (passwordcontroller.text.toString() == "") {
+      } else if (passwordController.text.isEmpty) {
         passwordFocusNode.requestFocus();
+      } else if (dropdownValue == "-- Select Account--") {
+        accountFocusNode.requestFocus();
       }
     }
   }
 
-  Future<String> checklogin() async {
-    dynamic responsedata;
-    // var url =
-    // '$hostname:$port/api/apilogin?username=${usernamecontroller.text}&password=${passwordcontroller.text}';
+  Future<String> checkLogin() async {
+    String username = usernameController.text;
+    String password = passwordController.text;
+
     var url =
-        'http://${AppConfig().host}:${AppConfig().port}/api/apilogin?username=${usernamecontroller.text}&password=${passwordcontroller.text}';
-    var body =
-        '''{username:"${usernamecontroller.text}",password:"${passwordcontroller.text}"''';
-    String length = body.length.toString();
+        'http://${AppConfig().host}:${AppConfig().port}/api/apilogin?username=$username&password=$password';
     var headers = {
       'Content-Type': 'application/json',
       'Host': 'apparelmvc',
@@ -126,59 +116,42 @@ class _MyLoginState extends State<MyLogin> {
     try {
       final response = await http.get(Uri.parse(url), headers: headers);
       if (response.statusCode == 200) {
-        //Encrypted data;
-        //AxonFunction af = AxonFunction();
-        responsedata = json.decode(response.body);
-        responsedata = Userdetails.fromJson(responsedata);
-        //data = (responsedata.username) as Encrypted;
-        //responsedata = af.decrypt(data);
-        //loginusername = af.decrypt(data);
-        loginuserid = responsedata.userid;
-        loginusername = usernamecontroller.text;
+        var responseData = json.decode(response.body);
+        var userDetails = Userdetails.fromJson(responseData);
+        loginuserid = userDetails.userid!;
+        loginusername = username;
         _showBottomSheet(context);
       } else {
         loginusername = "";
-        showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Apparel Message'),
-            content: const Text('Username or password Incorrect..!'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'OK'),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+        _showErrorDialog('Username or password Incorrect..!');
       }
     } catch (ex) {
-      // if (responsedata == 'null') {
       loginusername = "";
-      showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Apparel Message'),
-          content: const Text('Username or password Incorrect..!'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-      // }
-      throw ex.toString();
+      _showErrorDialog('Username or password Incorrect..!');
     }
     return loginusername;
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Apparel Message'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'OK'),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       elevation: 40.0,
-      // backgroundColor: Colors.cyanAccent,
       builder: (context) {
         return const ShowLoginProgressMessage();
       },
@@ -187,41 +160,32 @@ class _MyLoginState extends State<MyLogin> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     super.dispose();
-    usernamecontroller.dispose();
-    passwordcontroller.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
     userFocusNode.dispose();
     passwordFocusNode.dispose();
-    finyearFocusNode.dispose();
-    item.clear();
-    item.add("--Select Account Type--");
-    //items.removeRange(1, items.length - 1);
-    exit(0);
+    accountFocusNode.dispose();
+    items.clear();
+    items.add("--Select Account--");
+    Navigator.popUntil(context, (route) => route.isFirst);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        //appBar: AppBar(),
-        //backgroundColor: Colors.white,
         body: Container(
-      height: 1500,
+      height: double.infinity,
       decoration: const BoxDecoration(
           gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               stops: [0, 1],
-              colors: [Colors.white, Colors.white]
-              //colors: [Colors.white, Color.fromARGB(255, 18, 87, 143)]
-              )),
+              colors: [Colors.white, Colors.white])),
       child: SingleChildScrollView(
         child: Center(
-          widthFactor: 100,
           child: Column(children: <Widget>[
-            const SizedBox(
-              height: 150,
-            ),
+            const SizedBox(height: 150),
             Image.asset('assets/images/axon_logo.png', width: 150, height: 150),
             const SizedBox(
                 height: 50,
@@ -234,8 +198,7 @@ class _MyLoginState extends State<MyLogin> {
             SizedBox(
               width: 380,
               child: TextField(
-                controller: usernamecontroller,
-                textCapitalization: TextCapitalization.none,
+                controller: usernameController,
                 focusNode: userFocusNode,
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.person_outline),
@@ -244,14 +207,11 @@ class _MyLoginState extends State<MyLogin> {
                 ),
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: 380,
               child: TextField(
-                textCapitalization: TextCapitalization.none,
-                controller: passwordcontroller,
+                controller: passwordController,
                 focusNode: passwordFocusNode,
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -261,18 +221,15 @@ class _MyLoginState extends State<MyLogin> {
                 ),
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: 360,
               height: 50,
               child: DropdownButton<String>(
                 alignment: Alignment.centerRight,
-                //dropdownColor: Colors.amber,
                 isExpanded: true,
                 value: dropdownValue,
-                focusNode: finyearFocusNode,
+                focusNode: accountFocusNode,
                 icon: const Icon(Icons.arrow_downward),
                 elevation: 16,
                 style: const TextStyle(color: Colors.black),
@@ -281,7 +238,6 @@ class _MyLoginState extends State<MyLogin> {
                   color: const Color.fromARGB(255, 198, 199, 204),
                 ),
                 onChanged: (String? value) {
-                  // This is called when the user selects an item.
                   setState(() {
                     dropdownValue = value!;
                   });
@@ -294,11 +250,9 @@ class _MyLoginState extends State<MyLogin> {
                 }).toList(),
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             Container(
-              margin: EdgeInsets.only(left: 20.0), // Adjust margin as needed
+              margin: const EdgeInsets.only(left: 20.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -307,65 +261,38 @@ class _MyLoginState extends State<MyLogin> {
                     onChanged: (bool? value) {
                       setState(() {
                         rememberMe = value ?? false;
-                        // Call function to save credentials when checkbox state changes
                         saveCredentials();
                       });
                     },
                   ),
-                  Text('Remember Me'),
+                  const Text('Remember Me'),
                 ],
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: 380,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.arrow_forward_sharp),
-                onLongPress: () => showDialog<String>(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text('Apparel Message'),
-                    content: Text(
-                        'username :${usernamecontroller.text}  Password :${passwordcontroller.text}'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, 'OK');
-                        },
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ),
-                ),
-                onPressed: () {
-                  loginclick();
-                },
-                // onPressed: () {
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(builder: (context) => MyDrawerPage()),
-                //   );
-                // },
+                onPressed: loginclick,
                 label: const Text('Log in'),
-                //child: const Text('Log in'),
               ),
             ),
             SizedBox(
               width: 380,
               child: TextButton(
-                  onPressed: () {
-                    item.clear();
-                    item.add("--Select Account Type--");
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MainScreen(
-                                  head: 'Welconme to Apparl',
-                                )));
-                  },
-                  child: const Text("Activate App")),
+                onPressed: () {
+                  items.clear();
+                  items.add("--Select Account--");
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MainScreen(
+                                head: 'Welcome to Apparel',
+                              )));
+                },
+                child: const Text("Activate App"),
+              ),
             ),
           ]),
         ),

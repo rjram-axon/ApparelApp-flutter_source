@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:apparelapp/main/app_config.dart';
+import 'package:apparelapp/management/processprg_approvalOverlay.dart';
 import 'package:apparelapp/management/processprgapproval_approve.dart';
 import 'package:apparelapp/management/processprgapproval_details.dart';
 import 'package:flutter/material.dart';
@@ -55,9 +56,6 @@ class _ProcessProgramApprovalPageState
     extends State<ProcessProgramApprovalPage> {
   late Future<List<ApiProcessPrgAppdetails>> futureData;
   String approved = 'N'; // Default filter
-  bool isOverlayVisible = false; // To control overlay visibility
-  ApiProcessPrgAppdetails? selectedCard; // Selected card data
-  Future<List<ApiProcessPrgAppOverlayGrouped>>? overlayData; // Overlay data
 
   @override
   void initState() {
@@ -93,48 +91,6 @@ class _ProcessProgramApprovalPageState
     }
   }
 
-  // Fetch overlay data for a selected card
-  Future<List<ApiProcessPrgAppOverlayGrouped>> fetchOverlayData(
-      int id, String approved) async {
-    final response = await http.get(Uri.parse(
-        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessprgappItem?id=$id&approved=$approved'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['success']) {
-        final processprglist = data['processprglist'] as List;
-        if (processprglist.isEmpty) {
-          // Handle the case when no data is present
-          print('No data available');
-          return [];
-        }
-        final details = processprglist
-            .map((item) => ApiProcessPrgAppOverlaydetails.fromJson(item))
-            .toList();
-
-        // Group by orderno
-        final groupedData = <String, List<ApiProcessPrgAppOverlaydetails>>{};
-        for (var detail in details) {
-          if (!groupedData.containsKey(detail.prodPrgNo)) {
-            groupedData[detail.prodPrgNo!] = [];
-          }
-          groupedData[detail.prodPrgNo!]!.add(detail);
-        }
-
-        return groupedData.entries
-            .map((entry) => ApiProcessPrgAppOverlayGrouped(
-                  orderno: entry.key,
-                  details: entry.value,
-                ))
-            .toList();
-      } else {
-        throw Exception(data['message']);
-      }
-    } else {
-      throw Exception('Failed to load overlay data');
-    }
-  }
-
   // Handle filter change event
   void _onFilterChanged(String value) {
     setState(() {
@@ -143,21 +99,14 @@ class _ProcessProgramApprovalPageState
     });
   }
 
-  // Show overlay for a selected card
+  // Navigate to overlay page for a selected card
   void _showOverlay(ApiProcessPrgAppdetails cardData) {
-    setState(() {
-      isOverlayVisible = true;
-      selectedCard = cardData;
-      overlayData = fetchOverlayData(cardData.id, cardData.approved);
-    });
-  }
-
-  // Hide overlay
-  void _hideOverlay() {
-    setState(() {
-      isOverlayVisible = false;
-      selectedCard = null;
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProcessProgramOverlayPage(cardData: cardData),
+      ),
+    );
   }
 
   @override
@@ -299,170 +248,6 @@ class _ProcessProgramApprovalPageState
           ),
         ],
       ),
-      // Floating window overlay
-      floatingActionButton: Visibility(
-        visible: isOverlayVisible,
-        child: Stack(
-          children: [
-            GestureDetector(
-              onTap: _hideOverlay,
-              child: Container(
-                color: Colors.black
-                    .withOpacity(0.5), // Semi-transparent background
-              ),
-            ),
-            Positioned(
-              left: 20,
-              right: 20,
-              top: MediaQuery.of(context).size.height * 0.28,
-              child: FutureBuilder<List<ApiProcessPrgAppOverlayGrouped>>(
-                future: overlayData,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: SpinKitFadingCircle(
-                        color: Colors.blue,
-                        size: 50.0,
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(
-                      child: Text(
-                          'No overlay data found for the specified parameters.'),
-                    );
-                  } else {
-                    return Column(
-                      children: snapshot.data!.map((groupedItem) {
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 10,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.white, Colors.grey[200]!],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Prod Prg No: ${groupedItem.orderno}',
-                                  style: TextStyle(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                ...groupedItem.details.map((detail) {
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 10),
-                                      RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: 'Process: ',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: detail.process,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: Colors.black54,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                      RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: 'Program Date: ',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: detail.programDate,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: Colors.black54,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                                SizedBox(height: 30),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: FloatingActionButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProcessPrgAppEditPage(
-                                            prodprgid: groupedItem
-                                                .details.first.prodprgid,
-                                          ),
-                                        ),
-                                      ); // Handle the button action here
-                                    },
-                                    child: Icon(Icons.add),
-                                    backgroundColor: Colors.green,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  }
-                },
-              ),
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height *
-                        0.20), // Adjust this value to place the button higher
-                child: FloatingActionButton(
-                  onPressed: _hideOverlay,
-                  child: Icon(Icons.close),
-                  backgroundColor: Colors.red, // Set the button color
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
