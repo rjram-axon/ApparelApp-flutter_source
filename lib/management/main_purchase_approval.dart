@@ -28,22 +28,57 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
     fetchData(selectedFilter); // Fetch data based on the default filter
   }
 
-  Future<void> fetchData(String filter) async {
-    setState(() {
-      isLoading = true; // Start loading
-      orders.clear(); // Clear the orders list before fetching new data
-      uniquePOs.clear(); // Clear the unique POs list
-    });
-
-    final approvalStatus = filter == 'Approved' ? 'Y' : 'N';
-    final url =
-        'http://${AppConfig().host}:${AppConfig().port}/api/apipurchaseapproval?isapproved=$approvalStatus';
+  Future<Map<String, dynamic>> fetchMispathData() async {
+    final url = 'http://${AppConfig().host}:${AppConfig().port}/api/apimispath';
 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success']) {
+          return responseData['mispaths']
+              [0]; // Assuming you only need the first record
+        } else {
+          throw Exception('No MISPath details found');
+        }
+      } else {
+        throw Exception('Failed to load MISPath data');
+      }
+    } catch (e) {
+      print('Error fetching MISPath data: $e');
+      return {};
+    }
+  }
+
+  Future<void> fetchData(String filter) async {
+    setState(() {
+      isLoading = true;
+      orders.clear();
+      uniquePOs.clear();
+    });
+
+    try {
+      // Fetch Mispath data
+      final mispathData = await fetchMispathData();
+
+      if (mispathData.isEmpty) {
+        throw Exception('Failed to load MISPath data');
+      }
+
+      final validatePOApproval = mispathData['ValidatePOApproval'];
+      final validatePOGerApproval = mispathData['ValidatePOGerApproval'];
+
+      // Fetch orders based on the selected filter
+      final approvalStatus = filter == 'Approved' ? 'Y' : 'N';
+      final url =
+          'http://${AppConfig().host}:${AppConfig().port}/api/apipurchaseapproval?isapproved=$approvalStatus';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
         final List<dynamic> purchases = responseData['purchases'];
+
+        Map<String, List<PurchaseOrder>> groupedOrders = {};
 
         for (var purchaseData in purchases) {
           PurchaseOrder purchaseOrder = PurchaseOrder(
@@ -62,20 +97,34 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
             approved: purchaseData['IsApproved'],
           );
 
-          orders.add(purchaseOrder);
-
-          if (!uniquePOs.contains(purchaseOrder.purOrdNo)) {
-            uniquePOs.add(purchaseOrder.purOrdNo);
+          // Group orders by reference
+          if (groupedOrders.containsKey(purchaseOrder.reference)) {
+            groupedOrders[purchaseOrder.reference]!.add(purchaseOrder);
+          } else {
+            groupedOrders[purchaseOrder.reference] = [purchaseOrder];
           }
         }
 
-        // Update filter counts
+        // Flatten and filter the grouped orders based on MISPath logic
+        groupedOrders.forEach((reference, purchaseOrders) {
+          // Filtering logic
+          if (validatePOApproval == 'Y' ||
+              (validatePOGerApproval == 'Y' &&
+                  validatePOApproval == 'N' &&
+                  reference == 'General')) {
+            orders.addAll(purchaseOrders);
+            for (var po in purchaseOrders) {
+              if (!uniquePOs.contains(po.purOrdNo)) {
+                uniquePOs.add(po.purOrdNo);
+              }
+            }
+          }
+        });
+
         updateFilterCounts();
-        // Fetch counts for both filters
         fetchCounts();
 
         if (orders.isEmpty) {
-          // Show error message if no data is found
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('No $filter orders found.'),
@@ -88,15 +137,9 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
       }
     } catch (e) {
       print('Error: $e');
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     content: Text('Error fetching data. Please try again.'),
-      //     backgroundColor: Colors.red,
-      //   ),
-      // );
     } finally {
       setState(() {
-        isLoading = false; // Stop loading
+        isLoading = false;
       });
     }
   }

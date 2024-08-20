@@ -118,7 +118,6 @@ class _MyLoginState extends State<MyLogin> {
       if (response.statusCode == 200) {
         var responseData = json.decode(response.body);
         var userDetails = Userdetails.fromJson(responseData);
-        loginuserid = userDetails.userid!;
         loginusername = username;
         _showBottomSheet(context);
       } else {

@@ -59,42 +59,44 @@ class _AppPageState extends State<AppPage> {
   @override
   void initState() {
     super.initState();
-    internetconnection = checkinternet();
+    // internetconnection = checkinternet();
     pageloader();
   }
 
   @override
   void dispose() {
     super.dispose();
-    exit(0);
+    //exit(0);
   }
 
-  void pageloader() {
-    Timer.periodic(const Duration(milliseconds: 30), (Timer timer) {
-      setState(() {
-        if (value > 1) {
-          timer.cancel();
-          if (internetconnection == true) {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const MainScreen(
-                          head: 'Welcome to Apparel',
-                        )));
-            /* Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        const MainScreen(head: 'Welcome to Apparel'))); */
-          } else {
-            value = value - 0.1;
-            // _showBottomSheet(context);
-          }
-        } else {
-          value = value + 0.1;
-        }
-      });
-    });
+  void pageloader() async {
+    await _navigateBasedOnCache();
+  }
+
+  Future<void> _navigateBasedOnCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final companyConfigured = prefs.getString('company') != null;
+
+      if (companyConfigured) {
+        // Navigate to LoginScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MyLogin()),
+        );
+      } else {
+        // Navigate to MainScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainScreen(head: 'Welcome to Apparel'),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle the error
+      print("Error fetching shared preferences: $e");
+    }
   }
 
   // void _showBottomSheet(BuildContext context) {
