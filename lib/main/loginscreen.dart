@@ -117,7 +117,10 @@ class _MyLoginState extends State<MyLogin> {
       final response = await http.get(Uri.parse(url), headers: headers);
       if (response.statusCode == 200) {
         var responseData = json.decode(response.body);
-        var userDetails = Userdetails.fromJson(responseData);
+        var userDetails = responseData['users'];
+        // Store permissions globally
+        await saveUserPermissions(userDetails);
+
         loginusername = username;
         _showBottomSheet(context);
       } else {
@@ -129,6 +132,15 @@ class _MyLoginState extends State<MyLogin> {
       _showErrorDialog('Username or password Incorrect..!');
     }
     return loginusername;
+  }
+
+  Future<void> saveUserPermissions(Map<String, dynamic> userDetails) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setInt('Addflag', userDetails['Addflag']);
+    await prefs.setInt('Editflag', userDetails['Editflag']);
+    await prefs.setInt('Deleteflag', userDetails['Deleteflag']);
+    await prefs.setInt('Printflag', userDetails['Printflag']);
   }
 
   void _showErrorDialog(String message) {

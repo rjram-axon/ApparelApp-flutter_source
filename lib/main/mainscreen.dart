@@ -20,6 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   TextEditingController company = TextEditingController();
   TextEditingController host = TextEditingController();
   TextEditingController port = TextEditingController();
+  TextEditingController attachment_port = TextEditingController();
   TextEditingController finyear = TextEditingController();
 
   @override
@@ -43,8 +44,11 @@ class _MainScreenState extends State<MainScreen> {
         port.text = configData['port'] ?? '';
 
         // Set the host and port in AppConfig when loading the data
-        AppConfig()
-            .setConfig(company: company.text, host: host.text, port: port.text);
+        AppConfig().setConfig(
+            company: company.text,
+            host: host.text,
+            port: port.text,
+            attachment_port: attachment_port.text);
       }
     }
   }
@@ -73,8 +77,11 @@ class _MainScreenState extends State<MainScreen> {
       await prefs.setStringList('companyNames', companies);
 
       // Set the host and port in AppConfig after saving the data
-      AppConfig()
-          .setConfig(company: company.text, host: host.text, port: port.text);
+      AppConfig().setConfig(
+          company: company.text,
+          host: host.text,
+          port: port.text,
+          attachment_port: attachment_port.text);
 
       showDialog<String>(
         context: context,
@@ -194,6 +201,18 @@ class _MainScreenState extends State<MainScreen> {
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Hosted Port',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: 380,
+                  child: TextField(
+                    controller: attachment_port,
+                    textCapitalization: TextCapitalization.none,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Attachment Port For Quotaions',
                     ),
                   ),
                 ),

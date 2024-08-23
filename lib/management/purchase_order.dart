@@ -65,3 +65,32 @@ class PurchaseOrder {
     };
   }
 }
+
+class User {
+  final int menuId;
+  final int allFlag;
+  final int addFlag;
+  final int editFlag;
+  final int deleteFlag;
+  final int printFlag;
+
+  User({
+    required this.menuId,
+    required this.allFlag,
+    required this.addFlag,
+    required this.editFlag,
+    required this.deleteFlag,
+    required this.printFlag,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      menuId: json['MenuId'],
+      allFlag: json['AllFlg'],
+      addFlag: json['AddFlg'],
+      editFlag: json['EditFlg'],
+      deleteFlag: json['DeleteFlg'],
+      printFlag: json['PrintFlg'],
+    );
+  }
+}

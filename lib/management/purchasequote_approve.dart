@@ -99,7 +99,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
     }
 
     final String fileUrl =
-        'http://${AppConfig().host}:${AppConfig().port}/$_currentImagePath';
+        'http://${AppConfig().host}:${AppConfig().attachment_port}/$_currentImagePath';
 
     try {
       final tempDir = await getTemporaryDirectory();

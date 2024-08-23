@@ -10,6 +10,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'main_purchase_approval.dart';
 import 'purchase_order.dart'; // Importing the PurchaseOrder class
@@ -31,6 +32,7 @@ class PurchaseOrderDetail extends StatefulWidget {
 }
 
 class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
+  User? currentUser;
   List<PurchaseOrder> _filteredOrders(String poNumber) {
     return widget.orders.where((order) => order.purOrdNo == poNumber).toList();
   }
@@ -76,6 +78,56 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
       leftBarIndicatorColor: backgroundColor,
       flushbarPosition: FlushbarPosition.TOP,
     )..show(context);
+  }
+
+  Future<void> _login(String username, String password) async {
+    final String apiUrl =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apilogin?username=$username&password=$password';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success']) {
+          final List<User> users = (data['users'] as List)
+              .map((userJson) => User.fromJson(userJson))
+              .toList();
+
+          setState(() {
+            currentUser = users.isNotEmpty ? users[0] : null;
+          });
+          // Use the `users` list as needed in your UI or logic
+          print('Login successful. Users: ${users.length}');
+        } else {
+          // Handle invalid username or password
+          _showFlushbar(
+              'Invalid Username or Password.', Colors.red, Icons.error);
+        }
+      } else {
+        // Handle API error response
+        _showFlushbar('Failed to login. Please try again later.', Colors.red,
+            Icons.error);
+      }
+    } catch (error) {
+      // Handle exceptions
+      _showFlushbar('An error occurred: $error', Colors.red, Icons.error);
+    }
+  }
+
+  Future<void> applyPermissions() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    int addFlag = prefs.getInt('Addflag') ?? 0;
+    int editFlag = prefs.getInt('Editflag') ?? 0;
+    int deleteFlag = prefs.getInt('Deleteflag') ?? 0;
+    int printFlag = prefs.getInt('Printflag') ?? 0;
   }
 
   bool _areAllItemsApproved() {
@@ -136,7 +188,9 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
               ],
             ),
           ),
-          if (!_areAllItemsApproved())
+          if (currentUser != null &&
+              currentUser!.editFlag == 1 &&
+              !_areAllItemsApproved())
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(

@@ -14,6 +14,7 @@ class AppConfig {
   String? company;
   String? host;
   String? port;
+  String? attachment_port;
 
   final _storage = const FlutterSecureStorage(); // For sensitive data
   final Future<SharedPreferences> _prefs =
@@ -22,10 +23,12 @@ class AppConfig {
   Future<void> setConfig(
       {required String company,
       required String host,
-      required String port}) async {
+      required String port,
+      required String attachment_port}) async {
     this.company = company;
     this.host = host;
     this.port = port;
+    this.attachment_port = attachment_port;
 
     final prefs = await _prefs;
     List<String> configs = prefs.getStringList('configs') ?? [];
@@ -35,6 +38,7 @@ class AppConfig {
       'company': company,
       'host': host,
       'port': port,
+      'attachment_port': attachment_port,
     };
 
     // Remove any existing config for the same company
@@ -64,6 +68,7 @@ class AppConfig {
         this.company = config['company'];
         this.host = config['host'];
         this.port = config['port'];
+        this.attachment_port = config['attachment_port'];
         break;
       }
     }
