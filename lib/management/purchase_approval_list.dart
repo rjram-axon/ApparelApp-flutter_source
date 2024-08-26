@@ -33,6 +33,36 @@ class PurchaseOrderDetail extends StatefulWidget {
 
 class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
   User? currentUser;
+  List<User> allUsers = [];
+  bool hasMenuId220 = false;
+  @override
+  void initState() {
+    super.initState();
+    _initializeLogin();
+  }
+
+  Future<void> _initializeLogin() async {
+    final credentials = await _loadSavedCredentials();
+
+    final username = credentials['username'];
+    final password = credentials['password'];
+
+    if (username != null && password != null) {
+      await _login(username, password);
+    } else {
+      // Handle the case where credentials are not found
+      print('Credentials not found');
+    }
+  }
+
+  Future<Map<String, String?>> _loadSavedCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return {
+      'username': prefs.getString('username'),
+      'password': prefs.getString('password'),
+    };
+  }
+
   List<PurchaseOrder> _filteredOrders(String poNumber) {
     return widget.orders.where((order) => order.purOrdNo == poNumber).toList();
   }
@@ -102,6 +132,13 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
 
           setState(() {
             currentUser = users.isNotEmpty ? users[0] : null;
+            allUsers = users; // Store the entire list of users
+            for (User user in allUsers) {
+              if (user.menuId == 220) {
+                hasMenuId220 = true;
+                break; // Exit the loop if the condition is met
+              }
+            }
           });
           // Use the `users` list as needed in your UI or logic
           print('Login successful. Users: ${users.length}');
@@ -190,6 +227,7 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
           ),
           if (currentUser != null &&
               currentUser!.editFlag == 1 &&
+              hasMenuId220 && // Use the result of the check
               !_areAllItemsApproved())
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -204,7 +242,10 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
                 child: Text('Approve'),
               ),
             ),
-          if (_areAnyItemsApproved())
+          if (currentUser != null &&
+              currentUser!.editFlag == 1 &&
+              hasMenuId220 &&
+              _areAnyItemsApproved())
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(

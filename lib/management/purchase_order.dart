@@ -86,11 +86,11 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       menuId: json['MenuId'],
-      allFlag: json['AllFlg'],
-      addFlag: json['AddFlg'],
-      editFlag: json['EditFlg'],
-      deleteFlag: json['DeleteFlg'],
-      printFlag: json['PrintFlg'],
+      allFlag: json['Allflag'],
+      addFlag: json['Addflag'],
+      editFlag: json['Editflag'],
+      deleteFlag: json['Deleteflag'],
+      printFlag: json['Printflag'],
     );
   }
 }

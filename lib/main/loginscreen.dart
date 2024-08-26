@@ -117,7 +117,7 @@ class _MyLoginState extends State<MyLogin> {
       final response = await http.get(Uri.parse(url), headers: headers);
       if (response.statusCode == 200) {
         var responseData = json.decode(response.body);
-        var userDetails = responseData['users'];
+        var userDetails = responseData['users'][0];
         // Store permissions globally
         await saveUserPermissions(userDetails);
 
