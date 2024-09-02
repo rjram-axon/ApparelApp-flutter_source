@@ -99,7 +99,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
     }
 
     final String fileUrl =
-        'http://${AppConfig().host}:${AppConfig().attachment_port}/$_currentImagePath';
+        'http://${AppConfig().host}:${AppConfig().attachment_port}/Uploads/image/$_currentImagePath';
 
     try {
       final tempDir = await getTemporaryDirectory();
@@ -178,6 +178,10 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
   }
 
   void _handleApproval(String action) async {
+    // Determine the appropriate index
+    int targetIndex = _selectedItemIndex ??
+        0; // Default to the first item if no item is selected
+
     final apiUrl =
         'http://${AppConfig().host}:${AppConfig().port}/api/updatepurchasequoteapproval/${widget.quoteId}';
 
@@ -188,15 +192,13 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'QuoteDetid': _selectedItemIndex != null
-              ? _purchaseQuotationEditList[_selectedItemIndex!].quoteDetid
-              : null,
-          'NewApprate': _selectedItemIndex != null
-              ? double.tryParse(_purchaseQuotationEditList[_selectedItemIndex!]
-                  .apprate
-                  .toString())
-              : null,
-          'isApproved': action,
+          'QuoteDetid': _purchaseQuotationEditList[targetIndex].quoteDetid,
+          'NewApprate': double.tryParse(
+                _purchaseQuotationEditList[targetIndex].apprate.toString(),
+              ) ??
+              _purchaseQuotationEditList[targetIndex]
+                  .apprate, // Use approved rate if parse fails
+          'isApproved': action, // Set 'A' for approve and 'P' for revert
         }),
       );
 
@@ -209,7 +211,7 @@ class _PurchaseQuotationEditPageState extends State<PurchaseQuotationEditPage> {
           _showFlushbar(
             _isApproved
                 ? 'Purchase Quotation approved successfully'
-                : 'Purchase Quotation Reverted successfully',
+                : 'Purchase Quotation reverted successfully',
             _isApproved ? Colors.green : Colors.red,
             _isApproved ? Icons.check_circle : Icons.close,
           );
