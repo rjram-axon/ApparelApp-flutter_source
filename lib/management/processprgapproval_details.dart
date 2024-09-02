@@ -1,8 +1,7 @@
-import 'dart:ffi';
-
 class ApiProcessPrgAppdetails {
   final int id;
   final String orderno;
+  final String prodprgno;
   final String refno;
   final String style;
   final double quantity;
@@ -11,6 +10,7 @@ class ApiProcessPrgAppdetails {
   ApiProcessPrgAppdetails(
       {required this.id,
       required this.orderno,
+      required this.prodprgno,
       required this.refno,
       required this.style,
       required this.quantity,
@@ -18,12 +18,14 @@ class ApiProcessPrgAppdetails {
 
   factory ApiProcessPrgAppdetails.fromJson(Map<String, dynamic> json) {
     return ApiProcessPrgAppdetails(
-      id: json['ID'],
-      orderno: json['Orderno'],
-      refno: json['Refno'],
-      style: json['Style'],
-      quantity: json['Quantity'],
-      approved: json['Approved'],
+      id: json['ID'] ?? 0, // Default to 0 if null
+      orderno: json['Orderno'] ?? '', // Default to empty string if null
+      prodprgno: json['ProdPrgNo'] ?? '', // Default to empty string if null
+      refno: json['Refno'] ?? '', // Default to empty string if null
+      style: json['Style'] ?? '', // Default to empty string if null
+      quantity: (json['Quantity'] as num?)?.toDouble() ??
+          0.0, // Convert to double or default to 0.0 if null
+      approved: json['Approved'] ?? '', // Default to empty string if null
     );
   }
 }
@@ -59,7 +61,7 @@ class ProcessPrgApprovedetails {
   final String size;
   final String unit;
   final String inorout;
-  final Double programquantity;
+  final double programquantity;
   final String approved;
 
   ProcessPrgApprovedetails(

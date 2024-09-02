@@ -104,9 +104,18 @@ class _ProcessProgramApprovalPageState
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProcessProgramOverlayPage(cardData: cardData),
+        builder: (context) => ProcessProgramOverlayPage(
+          cardData: cardData,
+        ),
       ),
-    );
+    ).then((refresh) {
+      if (refresh != null && refresh) {
+        setState(() {
+          // Call your method to refresh data here
+          futureData = fetchApprovalData(approved);
+        });
+      }
+    });
   }
 
   @override

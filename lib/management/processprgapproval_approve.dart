@@ -205,7 +205,7 @@ class _ProcessPrgAppEditPageState extends State<ProcessPrgAppEditPage> {
         title: SizedBox(
           height: 40,
           child: Marquee(
-            text: '${_processPrgEditList.first.prodprgno.toString()}',
+            text: '${_processPrgEditList.first.prodprgno}',
             style: TextStyle(color: Colors.teal),
             scrollAxis: Axis.horizontal,
             crossAxisAlignment: CrossAxisAlignment.center,
