@@ -114,22 +114,29 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
         'http://${AppConfig().host}:${AppConfig().port}/api/updateprocessquoteapproval/${widget.quoteId}';
 
     try {
+      // Ensure that the selected item index is valid and fetch required values
+      final quoteDetid =
+          _ProcessQuotationEditList[_selectedItemIndex!].quoteDetid;
+      final newApprate = double.tryParse(_rateController.text);
+
+      if (newApprate == null) {
+        _showFlushbar('Invalid rate value', Colors.red, Icons.error);
+        return;
+      }
+
+      // Create the request body
+      final requestBody = {
+        'QuoteDetid': quoteDetid,
+        'NewApprate': newApprate,
+        'isApproved': 'P' // Indicates no change in approval status
+      };
+
       final response = await http.put(
         Uri.parse(apiUrl),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode({
-          'QuoteDetid': _selectedItemIndex != null
-              ? _ProcessQuotationEditList[_selectedItemIndex!].quoteDetid
-              : null,
-          'NewApprate': _selectedItemIndex != null
-              ? double.tryParse(
-                  _rateController.text,
-                )
-              : null,
-          'isApproved': 'N', // No change in approval status
-        }),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
@@ -141,8 +148,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
             Icons.check_circle,
           );
           setState(() {
-            _ProcessQuotationEditList[_selectedItemIndex!].apprate =
-                double.parse(_rateController.text);
+            _ProcessQuotationEditList[_selectedItemIndex!].apprate = newApprate;
           });
         } else {
           _showFlushbar(
@@ -168,6 +174,9 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
   }
 
   Future<void> _handleApproval(String action) async {
+    // Determine which item's rate to use
+    int targetIndex = _selectedItemIndex ??
+        0; // Use selected item index or default to the first item
     final apiUrl =
         'http://${AppConfig().host}:${AppConfig().port}/api/updateprocessquoteapproval/${widget.quoteId}';
 
@@ -178,16 +187,12 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'QuoteDetid': _selectedItemIndex != null
-              ? _ProcessQuotationEditList[_selectedItemIndex!].quoteDetid
-              : null,
-          'NewApprate': _selectedItemIndex != null
-              ? double.tryParse(
-                  _rateController.text,
-                )
-              : null,
+          'QuoteDetid': _ProcessQuotationEditList[targetIndex].quoteDetid,
+          'NewApprate': double.tryParse(_rateController.text) ??
+              _ProcessQuotationEditList[targetIndex]
+                  .apprate, // Fallback to approved rate
           'isApproved':
-              action, // Set action to 'A' for approve and 'P' for reject
+              action, // Set action to 'A' for approve and 'P' for revert
         }),
       );
 
@@ -200,7 +205,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
           _showFlushbar(
             _isApproved
                 ? 'Purchase Quotation approved successfully'
-                : 'Purchase Quotation Reverted successfully',
+                : 'Purchase Quotation reverted successfully',
             _isApproved ? Colors.green : Colors.red,
             _isApproved ? Icons.check_circle : Icons.close,
           );
@@ -238,7 +243,7 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
 
     // Full URL using the base path and file name
     final String fileUrl =
-        'http://${AppConfig().host}:${AppConfig().attachment_port}/$_currentImagePath';
+        'http://${AppConfig().host}:${AppConfig().attachment_port}/Uploads/image/$_currentImagePath';
 
     try {
       final tempDir = await getTemporaryDirectory();
@@ -353,8 +358,8 @@ class _ProcessQuotationEditPageState extends State<ProcessQuotationEditPage> {
                                               fontSize: 16.0),
                                         ),
                                         SizedBox(height: 8.0),
-                                        Text(
-                                            'Buy Ord No: ${item.buyordNo ?? 'N/A'}'),
+                                        // Text(
+                                        //     'Buy Ord No: ${item.buyordNo ?? 'N/A'}'),
                                         Text('Color: ${item.color}'),
                                         Text('Size: ${item.size}'),
                                         Text('UOM: ${item.uom}'),

@@ -189,6 +189,11 @@ class _ProcessQuotationApprovalPageState
                                       'Supplier: ${quotation.supplier}',
                                       style: TextStyle(fontSize: 14.0),
                                     ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Supplier: ${quotation.quoteid}',
+                                      style: TextStyle(fontSize: 14.0),
+                                    ),
                                     Text(
                                       'Quote Date: ${quotation.quoteDate.isEmpty ? 'N/A' : quotation.quoteDate}',
                                       style: TextStyle(fontSize: 14.0),

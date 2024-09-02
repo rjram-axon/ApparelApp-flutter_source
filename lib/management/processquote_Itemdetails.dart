@@ -30,7 +30,7 @@ class ProcessQuotation {
 class ProcessQuotationEdit {
   final int quoteid;
   final int quoteDetid;
-  final String? buyordNo;
+  //final String? buyordNo;
   final String item;
   final String color;
   final String size;
@@ -45,7 +45,7 @@ class ProcessQuotationEdit {
   ProcessQuotationEdit(
       {required this.quoteid,
       required this.quoteDetid,
-      this.buyordNo,
+      //this.buyordNo,
       required this.item,
       required this.color,
       required this.size,
@@ -60,7 +60,7 @@ class ProcessQuotationEdit {
     return ProcessQuotationEdit(
       quoteid: json['Quoteid'],
       quoteDetid: json['Process_Quote_detid'],
-      buyordNo: json['BuyordNo'],
+      //buyordNo: json['BuyordNo'],
       item: json['Item'],
       color: json['Color'],
       size: json['size'],
