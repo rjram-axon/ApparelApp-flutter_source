@@ -18,6 +18,7 @@ import '../stock/groupwisestock.dart';
 import '../stock/mainstock.dart';
 import '../stylegallery/mainstylegallery.dart';
 import '../supplieroutstanding/mainoutstanding.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class MyDrawerPage extends StatefulWidget {
   const MyDrawerPage({super.key});
@@ -26,16 +27,63 @@ class MyDrawerPage extends StatefulWidget {
   State<MyDrawerPage> createState() => _MyDrawerPageState();
 }
 
+class PieChartWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return PieChart(
+      PieChartData(
+        sections: [
+          PieChartSectionData(
+            color: Colors.blue,
+            value: 40,
+            title: '40%',
+            radius: 50,
+            titleStyle: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          PieChartSectionData(
+            color: Colors.red,
+            value: 30,
+            title: '30%',
+            radius: 50,
+            titleStyle: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          PieChartSectionData(
+            color: Colors.green,
+            value: 20,
+            title: '20%',
+            radius: 50,
+            titleStyle: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          PieChartSectionData(
+            color: Colors.orange,
+            value: 10,
+            title: '10%',
+            radius: 50,
+            titleStyle: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ],
+        sectionsSpace: 0,
+        centerSpaceRadius: 40,
+        borderData: FlBorderData(show: false),
+      ),
+    );
+  }
+}
+
 class _MyDrawerPageState extends State<MyDrawerPage> {
   final CarouselController _carouselController = CarouselController();
   final PageController _pageController = PageController();
   int _current = 0;
 
-  final List<String> _cardContents = [
-    'Welcome to the Carousel',
-    'Swipe to Explore More',
-    'Flutter Widgets',
-    'Customize Your Cards',
+  final List<dynamic> _cardContents = [
+    'Card 1 Content',
+    'Card 2 Content',
+    'pieChart', // Special identifier for pie chart
+    'Card 4 Content',
   ];
   @override
   void dispose() {
@@ -160,6 +208,11 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                   carouselController: _carouselController,
                   itemCount: _cardContents.length,
                   itemBuilder: (context, index, realIndex) {
+                    // Show pie chart at a specific index, e.g., index 2
+                    if (index == 2) {
+                      return PieChartWidget();
+                    }
+                    // Otherwise, build the regular card
                     return buildCard(_cardContents[index]);
                   },
                   options: CarouselOptions(
@@ -175,6 +228,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                     },
                   ),
                 ),
+
                 SizedBox(height: 16.0),
                 // Smooth page indicator
                 AnimatedSmoothIndicator(
