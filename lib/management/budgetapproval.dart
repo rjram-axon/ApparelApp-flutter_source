@@ -93,8 +93,13 @@ class _BudgetApprovalState extends State<BudgetApproval> {
         break;
       case 1:
         for (int i = 0; i < _allbudgetitems.length; i++) {
-          if (_allbudgetitems[i].process != "") {
+          if (_allbudgetitems[i].process != null &&
+              _allbudgetitems[i].process.trim().isNotEmpty) {
             _budgetitems.add(_allbudgetitems[i]);
+          } else {
+            // Show a message indicating that this order number doesn't have a process
+            showMessage(
+                "Order number ${_allbudgetitems[i].orderno} doesn't have any process.");
           }
         }
         _budgetitems.sort(
@@ -112,6 +117,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
         calculatecost();
         break;
     }
+
     if (_selectedIndex < 2) {
       itemlistsplit();
       budgetlistlength = _mainitemlist.length;
@@ -124,6 +130,11 @@ class _BudgetApprovalState extends State<BudgetApproval> {
       _itemlist;
       budgetlistlength;
     });
+  }
+
+  void showMessage(String message) {
+    // Replace this with your method to show a message, e.g., a dialog, a snackbar, or a toast
+    print(message); // Placeholder for showing the message
   }
 
   void penfingstatusfilter() {

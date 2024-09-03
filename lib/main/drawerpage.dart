@@ -80,7 +80,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
   int _current = 0;
 
   final List<dynamic> _cardContents = [
-    'Card 1 Content',
+    'Welcome to Apparel+ ERP',
     'Card 2 Content',
     'pieChart', // Special identifier for pie chart
     'Card 4 Content',
