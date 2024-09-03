@@ -138,6 +138,21 @@ class _MainBudgetApprovalState extends State<MainBudgetApproval> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Main Budget Approval',
+          style: TextStyle(color: Colors.teal),
+        ),
+        leading: IconButton(
+          color: Colors.teal,
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+      ),
       body: _isLoading
           ? const Center(
               // Display loading indicator while fetching data
@@ -150,20 +165,6 @@ class _MainBudgetApprovalState extends State<MainBudgetApproval> {
               headerSliverBuilder:
                   (BuildContext context, bool innerBoxScrolled) {
                 return <Widget>[
-                  SliverAppBar(
-                    elevation: 5,
-                    pinned: true,
-                    centerTitle: true,
-                    title: Text('Main - Budget approval'),
-                    actions: [
-                      IconButton(
-                        onPressed: () {
-                          _reset();
-                        },
-                        icon: Icon(Icons.restart_alt_rounded),
-                      ),
-                    ],
-                  ),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
