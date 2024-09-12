@@ -1,3 +1,4 @@
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/supplieroutstanding/supplierbasedoutstanding.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -34,7 +35,8 @@ class _ProcessOutstandingState extends State<ProcessOutstanding> {
 
   Future<void> getoutstandingdetails() async {
     dynamic responsedata;
-    var url = '$hostname:$port/api/apiprocessoutstanding';
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessoutstanding';
     var body = '''''';
     String length = body.length.toString();
     var headers = {
