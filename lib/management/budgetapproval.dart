@@ -12,6 +12,7 @@ import '../axondatamodal/budgetapprovaldetailmodal.dart';
 import '../axonlibrary/axongeneral.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:collection/collection.dart';
 
 import '../costingreport.dart/costingreport.dart';
 
@@ -25,6 +26,7 @@ class BudgetApproval extends StatefulWidget {
 class _BudgetApprovalState extends State<BudgetApproval> {
   int _selectedIndex = 0;
   int budgetlistlength = 0;
+  String? selectedProcess; // Define as nullable
   AxonBudgetLibrary budgetlib = AxonBudgetLibrary();
   late IconData iconname = Icons.verified_user_sharp;
   late IconData statusIcon;
@@ -36,6 +38,20 @@ class _BudgetApprovalState extends State<BudgetApproval> {
   final List<dynamic> _costlist = [];
   final List<BudgetMainItem> _mainitemlist = [];
   final List<dynamic> _itemlist = [];
+  final List<BudgetDetailModal> _itemlistforprocess = [];
+
+  Map<String, List<BudgetDetailModal>> groupedItems = {};
+
+// Method to group items
+  void groupItems() {
+    // Ensure _itemlist is of type List<BudgetDetailModal>
+    void groupItems() {
+      groupedItems = groupBy(
+        _itemlistforprocess.where((item) => item.process != null),
+        (BudgetDetailModal item) => item.process!,
+      );
+    }
+  }
 
   //final List<dynamic> _comlist = [];
   TextEditingController apprate = TextEditingController();
@@ -365,7 +381,61 @@ class _BudgetApprovalState extends State<BudgetApproval> {
         );
 
         // Navigate back after a short delay
-        Future.delayed(Duration(seconds: 1), () {
+        // Future.delayed(Duration(seconds: 1), () {
+        //   Navigator.pop(context);
+        // });
+      } else {
+        // Handle the error response
+        var errorBody = jsonDecode(response.body);
+        String errorMessage =
+            errorBody['message'] ?? 'Failed to update approval status';
+        throw Exception('Failed to update approval status: $errorMessage');
+      }
+    } catch (e) {
+      // Handle the exception
+      setState(() {
+        // Optionally show error message or update UI
+      });
+      // Show error message using Flushbar
+      _showFlushbar(
+        'Budget Approval Failed!',
+        Colors.red,
+        Icons.close,
+      );
+    }
+  }
+
+  void _handleApproveButton() async {
+    // Prepare the list of items to be updated
+    List<Map<String, dynamic>> itemsToUpdate = _itemlist
+        .where((item) => item.status.toString() == "0")
+        .map((item) => {
+              'cost_defn_bomid': item.cost_defn_bomid,
+              'AppRate': item.apprate,
+              'AppQty': item.quantity,
+              // Add any additional data as needed
+            })
+        .toList();
+
+    try {
+      var response = await http.put(
+        Uri.parse(
+            'http://${AppConfig().host}:${AppConfig().port}/api/updatebudgetapproval'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(itemsToUpdate),
+      );
+
+      if (response.statusCode == 200) {
+        _showFlushbar(
+          'Budget Approval updated successfully!',
+          Colors.green,
+          Icons.check,
+        );
+
+        // Navigate back after a short delay
+        Future.delayed(Duration(seconds: 3), () {
           Navigator.pop(context);
         });
       } else {
@@ -386,6 +456,106 @@ class _BudgetApprovalState extends State<BudgetApproval> {
         Colors.red,
         Icons.close,
       );
+    }
+  }
+
+  void _handleRevertButtonPress() async {
+    // Ensure a process is selected
+    if (selectedProcess == null) {
+      _showFlushbar(
+        'No process selected!',
+        Colors.red,
+        Icons.close,
+      );
+      return;
+    }
+
+    // Filter items to include only those related to the selected process
+    var filteredItems =
+        _itemlist.where((item) => item.process == selectedProcess).toList();
+
+    // Group filtered items by process
+    var groupedItems = groupBy(filteredItems, (item) => item.process);
+
+    // Prepare the list of items to be reverted for each process
+    List<Map<String, dynamic>> itemsToRevert = [];
+
+    groupedItems.forEach((process, items) {
+      var processItems = items
+          .where((item) =>
+              item.status.toString() == "1") // Assuming "1" means approved
+          .map((item) => {
+                'cost_defn_bomid': item.cost_defn_bomid,
+                'AppQty': item.quantity,
+              })
+          .toList();
+
+      // Add each process's items to the final list
+      itemsToRevert.add({
+        'process': process,
+        'items': processItems,
+      });
+    });
+
+    try {
+      var response = await http.put(
+        Uri.parse(
+            'http://${AppConfig().host}:${AppConfig().port}/api/revertbudgetapproval'), // Revert API endpoint
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(itemsToRevert),
+      );
+
+      if (response.statusCode == 200) {
+        _showFlushbar(
+          'Budget Revert successful!',
+          Colors.green,
+          Icons.check,
+        );
+
+        // Navigate back after a short delay
+        // Future.delayed(Duration(seconds: 1), () {
+        //   Navigator.pop(context);
+        // });
+      } else {
+        // Handle the error response
+        var errorBody = jsonDecode(response.body);
+        String errorMessage =
+            errorBody['message'] ?? 'Failed to revert approval status';
+        throw Exception('Failed to revert approval status: $errorMessage');
+      }
+    } catch (e) {
+      // Handle the exception
+      setState(() {
+        // Optionally show error message or update UI
+      });
+      // Show error message using Flushbar
+      _showFlushbar(
+        'Budget Revert Failed!',
+        Colors.red,
+        Icons.close,
+      );
+    }
+  }
+
+  void handleSelectedProcess() {
+    // Step 1: Group all items by their process
+    var groupedItems = groupBy(_itemlist, (item) => item.process);
+
+    // Step 2: Access the items for the selected process
+    var itemsForSelectedProcess = groupedItems[selectedProcess] ?? [];
+
+    // Debug print to check items for the selected process
+    print('Items for selected process: $itemsForSelectedProcess');
+
+    // Example: Check if a specific item is in the grouped items
+    // (Assuming you want to check if an item at a specific index is in the selected process group)
+    if (_itemlist.isNotEmpty) {
+      final itemAtIndex = _itemlist[0]; // Or any index you want to check
+      bool itemInGroupedItems = itemsForSelectedProcess.contains(itemAtIndex);
+
+      print('Is the item in grouped items? $itemInGroupedItems');
     }
   }
 
@@ -721,7 +891,8 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                 body: ListView.builder(
                   itemCount: budgetlistlength,
                   itemBuilder: ((context, index) {
-                    // Filter items relevant to the current _mainitemlist[index]
+                    final item = _itemlist[index];
+
                     List relevantItems = _itemlist
                         .where((item) =>
                             item.item.toString() ==
@@ -737,7 +908,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                         .toList();
                     // Example code to handle empty process page
 
-// Check if relevantItems is not empty and process is not empty
+                    // Check if relevantItems is not empty and process is not empty
                     String titleText;
 
                     if (relevantItems.isNotEmpty &&
@@ -752,7 +923,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                           : "No data available"; // Fallback text if _mainitemlist is also empty or index is out of bounds
                     }
 
-// Example of displaying a message if lists are empty
+                    // Example of displaying a message if lists are empty
                     // if (relevantItems.isEmpty && _mainitemlist.isEmpty) {
                     //   showMessage(
                     //       "The process page is empty and no data is available.");
@@ -793,20 +964,20 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                           // const SizedBox(
                           //   height: 0,
                           // ),
-                          SizedBox(
-                              height: 20,
-                              width: 380,
-                              child: Text(
-                                '${budgetlistlength.toString()} Results found',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Color.fromARGB(255, 55, 110, 138),
-                                  fontSize: 18.0,
-                                ),
-                              )),
-                          const SizedBox(
-                            height: 10,
-                          ),
+                          // SizedBox(
+                          //     height: 20,
+                          //     width: 380,
+                          //     child: Text(
+                          //       '${budgetlistlength.toString()} Results found',
+                          //       textAlign: TextAlign.center,
+                          //       style: const TextStyle(
+                          //         color: Color.fromARGB(255, 55, 110, 138),
+                          //         fontSize: 18.0,
+                          //       ),
+                          //     )),
+                          // const SizedBox(
+                          //   height: 10,
+                          // ),
                         ],
                         Card(
                             shape: RoundedRectangleBorder(
@@ -814,6 +985,17 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                             ),
                             elevation: 6,
                             child: ExpansionTile(
+                              onExpansionChanged: (expanded) {
+                                if (expanded) {
+                                  setState(() {
+                                    selectedProcess = item.process;
+                                    groupItems(); // Ensure grouping is done before accessing
+                                  });
+                                  // Call the function after updating the selected process
+                                  handleSelectedProcess();
+                                  print('Selected process: $selectedProcess');
+                                }
+                              },
                               leading: CircleAvatar(
                                   backgroundColor: Colors.white,
                                   child: Icon(
@@ -1241,89 +1423,6 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                                 )
                               ],
                             )),
-
-                        /* 28-03-2023 Card(
-                    child: ExpansionTile(
-                        leading: CircleAvatar(
-                            child: Icon(
-                          iconname,
-                        )),
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (_budgetitems[index].process.toString() !=
-                                "") ...[
-                              Text(
-                                " ${_budgetitems[index].process.toString()}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                            ],
-                            Text(
-                              "Item     :  ${_budgetitems[index].item.toString()}-${_budgetitems[index].color.toString()}-${_budgetitems[index].size.toString()}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                                "Quantity : ${_budgetitems[index].quantity.toString()}"),
-                            const SizedBox(height: 5),
-                            Text(
-                                "Rate     : ${_budgetitems[index].apprate.toString()}"),
-                            const SizedBox(height: 5),
-                            Text(
-                                "App Rate : ${_budgetitems[index].apprate.toString()}"),
-                            const SizedBox(height: 5),
-                            Text(
-                                "Amount   : ${_budgetitems[index].amount.toString()}"),
-                            const SizedBox(height: 5),
-                          ],
-                        ),
-                        subtitle: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                if (_budgetitems[index].status! > 0) ...[
-                                  const Icon(Icons.check_circle, size: 15),
-                                  const Text(" Approved ",
-                                      style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold)),
-                                ] else ...[
-                                  const Icon(Icons.pending_actions_rounded,
-                                      size: 15, color: Colors.red),
-                                  const Text(" Pending ",
-                                      style: TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold)),
-                                ]
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                          ],
-                        ),
-                        //trailing: const Icon(Icons.arrow_drop_down_circle),
-                        children: [
-                      ListTile(
-                        title: TextFormField(
-                            controller: apprate,
-                            decoration: InputDecoration(
-                                labelText: 'App Rate',
-                                suffixIcon: IconButton(
-                                    onPressed: () {
-                                      onappratechanged(index);
-                                    },
-                                    icon: const Icon(Icons.done,
-                                        color: Colors.green)))),
-                      ),
-                    ])) */
                       ]);
                     } else if (_selectedIndex < 3) {
                       return Column(children: [
@@ -1331,20 +1430,20 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                           const SizedBox(
                             height: 10,
                           ),
-                          SizedBox(
-                              height: 15,
-                              width: 380,
-                              child: Text(
-                                '${budgetlistlength.toString()} Results found.',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.indigo,
-                                  fontSize: 16.0,
-                                ),
-                              )),
-                          const SizedBox(
-                            height: 5,
-                          ),
+                          // SizedBox(
+                          //     height: 15,
+                          //     width: 380,
+                          //     child: Text(
+                          //       '${budgetlistlength.toString()} Results found.',
+                          //       textAlign: TextAlign.center,
+                          //       style: const TextStyle(
+                          //         color: Colors.indigo,
+                          //         fontSize: 16.0,
+                          //       ),
+                          //     )),
+                          // const SizedBox(
+                          //   height: 5,
+                          // ),
                         ],
                         Card(
                           elevation: 3,
@@ -1438,210 +1537,173 @@ class _BudgetApprovalState extends State<BudgetApproval> {
                         ),
                       ]);
                     } else {
-                      return Column(children: [
-                        Card(
-                          child: Column(children: [
-                            ExpansionTile(
-                                leading: Icon(iconname),
-                                title: const Text("Summary"),
-                                collapsedIconColor: Colors.blue,
-                                iconColor: Colors.blue,
-                                initiallyExpanded: false,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.topLeft,
-                                        padding: const EdgeInsets.all(5),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: const [
-                                            Text('Fabric and Yarn :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Process :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Production :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Accessories :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Commercial :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Total :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                          ],
-                                        ),
+                      return Column(
+                        children: [
+                          Card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: const Text(
+                                    "Summary",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Container(
+                                      alignment: Alignment.topLeft,
+                                      padding: const EdgeInsets.all(5),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: const [
+                                          Text('Fabric and Yarn :'),
+                                          SizedBox(height: 10),
+                                          Text('Process :'),
+                                          SizedBox(height: 10),
+                                          Text('Production :'),
+                                          SizedBox(height: 10),
+                                          Text('Accessories :'),
+                                          SizedBox(height: 10),
+                                          Text('Commercial :'),
+                                          SizedBox(height: 10),
+                                          Text('Total :'),
+                                        ],
                                       ),
-                                      Container(
-                                        alignment: Alignment.topLeft,
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Text(af
-                                                .formatenumber(yarncost)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(processcost)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(productioncost)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(trimscost)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(comcost)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(totcost)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                          ],
-                                        ),
+                                    ),
+                                    Container(
+                                      alignment: Alignment.topLeft,
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(af
+                                              .formatenumber(yarncost)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(processcost)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(productioncost)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(trimscost)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(comcost)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(totcost)
+                                              .toString()),
+                                        ],
                                       ),
-                                    ],
-                                  )
-                                ]),
-                            ExpansionTile(
-                                leading: Icon(iconname),
-                                title: const Text("Profit & Sales"),
-                                collapsedIconColor: Colors.blue,
-                                iconColor: Colors.blue,
-                                initiallyExpanded: false,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.topLeft,
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: const [
-                                            Text('Sales price :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Profit % :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text('Profit value :'),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                          ],
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: const Text(
+                                    "Profit & Sales",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Container(
+                                      alignment: Alignment.topLeft,
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: const [
+                                          Text('Sales price :'),
+                                          SizedBox(height: 10),
+                                          Text('Profit % :'),
+                                          SizedBox(height: 10),
+                                          Text('Profit value :'),
+                                        ],
                                       ),
-                                      Container(
-                                        alignment: Alignment.topLeft,
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Text(af
-                                                .formatenumber(
-                                                    orderdetails.salesprice)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(orderdetails
-                                                    .sale_profit_percent)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(af
-                                                .formatenumber(
-                                                    orderdetails.sale_profit)
-                                                .toString()),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                          ],
-                                        ),
+                                    ),
+                                    Container(
+                                      alignment: Alignment.topLeft,
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(af
+                                              .formatenumber(
+                                                  orderdetails.salesprice)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(orderdetails
+                                                  .sale_profit_percent)
+                                              .toString()),
+                                          SizedBox(height: 10),
+                                          Text(af
+                                              .formatenumber(
+                                                  orderdetails.sale_profit)
+                                              .toString()),
+                                        ],
                                       ),
-                                    ],
-                                  )
-                                ]),
-                          ]),
-                        )
-                      ]);
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                              height:
+                                  200), // Space between the cards and button
+                          ElevatedButton(
+                            onPressed: () {
+                              _handleApproveButton(); // Implement your approval logic here
+                            },
+                            child: Text("Approve"),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.green,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 60, vertical: 15),
+                              textStyle: TextStyle(fontSize: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
                     }
                   }),
                 ),
               ),
-        // persistentFooterButtons: [
-        //   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-
-        //     const SizedBox(width: 10),
-        //     OutlinedButton(
-        //       onPressed: () async {
-        //         var result = await approveall();
-        //         // ignore: unrelated_type_equality_checks
-        //         if (result == true) {
-        //           // ignore: use_build_context_synchronously
-        //           Navigator.pop(context);
-        //         }
-        //       },
-        //       style: ButtonStyle(
-        //           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-        //               RoundedRectangleBorder(
-        //                   borderRadius: BorderRadius.circular(18.0),
-        //                   side: const BorderSide())),
-        //           backgroundColor: MaterialStateProperty.all(Colors.green),
-        //           foregroundColor: MaterialStateProperty.all(Colors.white),
-        //           fixedSize: MaterialStateProperty.all(const Size(180, 10))),
-        //       child: const Text('Approve'),
-        //     )
-        //   ])
-        // ],
         bottomNavigationBar: BottomNavigationBar(
           elevation: 20,
           items: const <BottomNavigationBarItem>[
