@@ -1,5 +1,6 @@
 //import 'package:apparelapp/profitlossreport/profitlossreport.dart';
 //import 'package:apparelapp/stock/orderwisestock.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 //import 'package:apparelapp/orderstatus/orderstatus.dart';
@@ -37,7 +38,8 @@ class _StyleGalleryState extends State<StyleGallery> {
 
   void getstyledetails() async {
     dynamic responsedata;
-    var url = '$hostname:$port/api/apistylgallery/$styleid';
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apistylgallery/$styleid';
     var body = '''''';
     String length = body.length.toString();
     var headers = {

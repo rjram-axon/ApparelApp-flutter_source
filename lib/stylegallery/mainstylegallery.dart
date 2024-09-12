@@ -1,4 +1,5 @@
 import 'package:apparelapp/axondatamodal/axonfitrationmodal/stylegalleryfilter.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:apparelapp/stylegallery/stylegallery.dart';
 import 'package:apparelapp/axondatamodal/stylegallerymodal.dart';
@@ -35,7 +36,8 @@ class _MainStyleGalleryState extends State<MainStyleGallery> {
 
   void getstylegallerydetails() async {
     dynamic responsedata;
-    var url = '$hostname:$port/api/apistylgallery';
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apistylgallery';
     var body = '''''';
     String length = body.length.toString();
     var headers = {
@@ -114,7 +116,7 @@ class _MainStyleGalleryState extends State<MainStyleGallery> {
                             autofocus: true,
                             //hoverColor: Colors.indigoAccent,
                             icon: Image.network(
-                              '$hostname:$port${_styleitems[index].imagepath!.replaceAll('~', '')}',
+                              'http://${AppConfig().host}:${AppConfig().attachment_port}${_styleitems[index].imagepath!.replaceAll('~', '')}',
                               //height: 100,
                               width: 100,
                               errorBuilder: (BuildContext context,
