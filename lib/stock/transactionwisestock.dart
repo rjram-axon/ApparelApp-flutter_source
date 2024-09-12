@@ -2,6 +2,7 @@ import 'package:apparelapp/axondatamodal/stocktransmodal.dart';
 import 'package:apparelapp/axonlibrary/axonfunctions.dart';
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
 import 'package:apparelapp/axonlibrary/axonstocklibrary.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/stock/itemwisestockdetails.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -41,7 +42,7 @@ class _TransactionwisestockState extends State<Transactionwisestock> {
   Future<void> getttransdetails() async {
     dynamic responsedata;
     var url =
-        '$hostname:$port/api/apisstocksummary?id=1&itemtype=$itemtype&transtype=$transtype';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apisstocksummary?id=1&itemtype=$itemtype&transtype=$transtype';
     var body = '''''';
     String length = body.length.toString();
     var headers = {

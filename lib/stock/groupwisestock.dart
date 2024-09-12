@@ -1,6 +1,7 @@
 import 'package:apparelapp/axondatamodal/stockgroupwisemodal.dart';
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
 import 'package:apparelapp/axonlibrary/axonstocklibrary.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/stock/transactionwisestock.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -46,7 +47,8 @@ class _GroupWiseStockState extends State<GroupWiseStock> {
 
   Future<void> getstockgroupdetails() async {
     dynamic responsedata;
-    var url = '$hostname:$port/api/apisstocksummary?otype=$ordtype';
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apisstocksummary?otype=$ordtype';
     var body = '''''';
     String length = body.length.toString();
     var headers = {
