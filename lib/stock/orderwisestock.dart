@@ -1,3 +1,4 @@
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/main/drawerpage.dart';
 import 'package:flutter/material.dart';
 import 'package:apparelapp/axondatamodal/stockreportmodal.dart';
@@ -65,7 +66,8 @@ class _OrderWiseStockState extends State<OrderWiseStock> {
     dynamic responsedata;
 
     /* Getting the data from the concern project using API (Application programming Interface) */
-    var url = '$hostname:$port/api/apistockstatus'; // This is API Url
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apistockstatus'; // This is API Url
 
     /* This is body content to send the API */
     var body = json.encode({

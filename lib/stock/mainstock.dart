@@ -5,6 +5,7 @@ import 'package:apparelapp/axondatamodal/axonfitrationmodal/axondatafiltration.d
 import 'package:apparelapp/axondatamodal/axonfitrationmodal/orderwisestockfilter.dart';
 import 'package:apparelapp/axondatamodal/stockreportmodal.dart';
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/stock/orderwisestock.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -124,7 +125,8 @@ class _MainStockState extends State<MainStock> {
     }
 
     /* Getting the data from the concern project using API (Application programming Interface) */
-    var url = '$hostname:$port/api/apistockstatus?token=""'; // This is API Url
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apistockstatus'; // This is API Url
 
     /* This is body content to send the API */
     var body = json.encode({

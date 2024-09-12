@@ -1,3 +1,4 @@
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/main/drawerpage.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -45,7 +46,8 @@ class _StockTrackingState extends State<StockTracking> {
     dynamic responsedata;
 
     /* Getting the data from the concern project using API (Application programming Interface) */
-    var url = '$hostname:$port/api/apistockstatus?id=0'; // This is API Url
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apistockstatus'; // This is API Url
 
     /* This is body content to send the API */
     var body = json.encode({
@@ -63,7 +65,7 @@ class _StockTrackingState extends State<StockTracking> {
       "Storename": store,
       "Storeid": storeid,
       "Fromdate": "2022-12-01",
-      "Todate": "2023-01-02"
+      "Todate": "2025-01-02"
     });
     String length =
         body.length.toString(); // Getting body length from body variable
@@ -75,7 +77,7 @@ class _StockTrackingState extends State<StockTracking> {
     }; // This is header content to send the API Link
 
     try {
-      final response = await http.put(Uri.parse(url),
+      final response = await http.post(Uri.parse(url),
           headers: headers,
           body:
               body); // Api (POST) method syntax for sending contents & getting concern details

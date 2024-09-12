@@ -1,6 +1,7 @@
 import 'package:apparelapp/axondatamodal/itemwisestockdetailsmodal.dart';
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
 import 'package:apparelapp/axonlibrary/axonstocklibrary.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../axonlibrary/axonstockmainfilter.dart';
@@ -38,7 +39,7 @@ class _ItemStockwiseDetailState extends State<ItemStockwiseDetail> {
   Future<void> getitemdetails() async {
     dynamic responsedata;
     var url =
-        '$hostname:$port/api/apisstocksummary?id=2&itemtype=$itemtype&transtype=$transtype';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apisstocksummary?id=2&itemtype=$itemtype&transtype=$transtype';
     var body = '''''';
     String length = body.length.toString();
     var headers = {
