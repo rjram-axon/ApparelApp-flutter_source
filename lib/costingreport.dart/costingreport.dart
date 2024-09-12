@@ -3,6 +3,7 @@ import 'package:apparelapp/axondatamodal/filtrationmodal.dart';
 import 'package:apparelapp/axonlibrary/axonfunctions.dart';
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
 import 'package:apparelapp/main.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/main/drawerpage.dart';
 import 'package:apparelapp/profitlossreport/profitlossreport.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +72,8 @@ class _CostingReportState extends State<CostingReport> {
     }
 
     /* Getting the data from the concern project using API (Application programming Interface) */
-    var url = '$hostname:$port/api/apiconscosting'; // This is API Url
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiconscosting'; // This is API Url
 
     /* This is body content to send the API */
     var body = '''{\r\n        
