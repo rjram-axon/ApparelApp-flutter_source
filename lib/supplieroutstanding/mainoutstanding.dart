@@ -1,4 +1,5 @@
 import 'package:apparelapp/supplieroutstanding/processoutstanding.dart';
+import 'package:apparelapp/supplieroutstanding/purchase/purchasesummary.dart';
 import 'package:flutter/material.dart';
 
 class MainOutstandingList extends StatefulWidget {
@@ -21,7 +22,12 @@ class _MainOutstandingListState extends State<MainOutstandingList> {
                 child: ListTile(
               leading: const Icon(Icons.shopping_basket_outlined),
               title: const Text("Purchase"),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: ((context) => const Purchasesummary())));
+              },
             )),
             Card(
                 child: ListTile(

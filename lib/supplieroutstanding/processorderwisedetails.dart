@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
 import '../axondatamodal/axonfitrationmodal/processoutstandingfilter.dart';
 import '../axondatamodal/processoutstanding/processorderwiseoutstanding.dart';
@@ -32,7 +33,7 @@ class _ProcessorderwisedetailsState extends State<Processorderwisedetails> {
   Future<void> getstockdetails() async {
     dynamic responsedata;
     var url =
-        '$hostname:$port/api/apiprocessoutstanding?supplierid=$outsupplierid&processid=$outprocessid';
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessoutstanding?supplierid=$outsupplierid&processid=$outprocessid';
     var body = '''''';
     String length = body.length.toString();
     var headers = {

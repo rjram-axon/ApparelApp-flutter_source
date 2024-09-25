@@ -1,4 +1,5 @@
 import 'package:apparelapp/axondatamodal/processoutstanding/supplierwiseprocessoutsatingmodal.dart';
+import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/supplieroutstanding/processorderwisedetails.dart';
 import 'package:flutter/material.dart';
 import 'package:apparelapp/axondatamodal/axonfitrationmodal/processoutstandingfilter.dart';
@@ -32,7 +33,8 @@ class _SupplierBasedOutstandingState extends State<SupplierBasedOutstanding> {
 
   Future<void> getstockdetails() async {
     dynamic responsedata;
-    var url = '$hostname:$port/api/apiprocessoutstanding/$outsupplierid';
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apiprocessoutstanding/$outsupplierid';
     var body = '''''';
     String length = body.length.toString();
     var headers = {
