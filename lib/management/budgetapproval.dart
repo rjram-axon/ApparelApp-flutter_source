@@ -857,12 +857,12 @@ class _BudgetApprovalState extends State<BudgetApproval> {
               decelerationDuration: Duration(milliseconds: 500),
               decelerationCurve: Curves.easeOut,
               style: TextStyle(
-                color: Colors.teal, // Set the text color to teal
+                color: Color(0xFF0072FF), // Set the text color to teal
               ),
             ),
           ),
           leading: IconButton(
-            color: Colors.teal,
+            color: Color(0xFF0072FF),
             icon: Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.pop(context); // Navigate back to the previous screen
@@ -873,7 +873,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
             ? const Center(
                 // Display loading indicator while fetching data
                 child: SpinKitFadingCircle(
-                  color: Colors.teal, // Choose your desired color
+                  color: Color(0xFF0072FF), // Choose your desired color
                   size: 50.0, // Set the size of the loading animation
                 ), // Loading indicator
               )
@@ -1728,7 +1728,7 @@ class _BudgetApprovalState extends State<BudgetApproval> {
               .white, // Set the background color of the BottomNavigationBar
           currentIndex: _selectedIndex,
           selectedItemColor:
-              Colors.teal, // Set the color of the selected item icon
+              Color(0xFF0072FF), // Set the color of the selected item icon
           unselectedItemColor: Colors
               .grey, // Set the color of the unselected item icon (optional)
           iconSize: 30,

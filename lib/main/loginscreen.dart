@@ -202,7 +202,7 @@ class _MyLoginState extends State<MyLogin> {
                 height: 50,
                 child: Text('Welcome to axon ..!',
                     style: TextStyle(
-                        color: Color.fromARGB(255, 26, 72, 94),
+                        color: Colors.teal,
                         fontSize: 25.0,
                         fontStyle: FontStyle.normal,
                         fontWeight: FontWeight.bold))),

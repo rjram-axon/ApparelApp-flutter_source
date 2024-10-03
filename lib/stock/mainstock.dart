@@ -229,27 +229,19 @@ class _MainStockState extends State<MainStock> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          elevation: 5,
-          centerTitle: false,
-          title: const Text('Stock Details'),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  refreshdata();
-                },
-                icon: const Icon(Icons.restart_alt_rounded)),
-            IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.dashboard_sharp)),
-            IconButton(
-                onPressed: () {
-                  _showModalBottomSheet(context);
-                },
-                icon: const Icon(Icons.tune_outlined))
-          ],
-          //actions: <Widget>[DropdownButton(items: items, onChanged: () {})],
+          elevation: 0,
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Stock Details',
+            style: TextStyle(color: Color(0xFF0072FF)),
+          ),
+          leading: IconButton(
+            color: Color(0xFF0072FF),
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context); // Navigate back to the previous screen
+            },
+          ),
         ),
         body: NestedScrollView(
             headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) {

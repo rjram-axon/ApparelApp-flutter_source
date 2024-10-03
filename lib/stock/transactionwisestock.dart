@@ -75,7 +75,21 @@ class _TransactionwisestockState extends State<Transactionwisestock> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(stocklibrary.transtitlename)),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Stock - Transaction Summary',
+          style: TextStyle(color: Color(0xFF0072FF)),
+        ),
+        leading: IconButton(
+          color: Color(0xFF0072FF),
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+      ),
       body: ListView.builder(
           itemCount: listlength,
           itemBuilder: ((context, index) {

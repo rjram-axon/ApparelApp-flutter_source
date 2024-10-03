@@ -142,25 +142,19 @@ class _StockTrackingState extends State<StockTracking> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          centerTitle: false,
-          title: const Text("Stock tracking"),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  refreshdata();
-                },
-                icon: const Icon(Icons.restart_alt_outlined)),
-            // IconButton(
-            //     onPressed: () {
-            //       dispose();
-            //       Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //               builder: ((context) => const MyDrawerPage())));
-            //     },
-            //     icon: const Icon(Icons.dashboard_sharp)),
-            // IconButton(onPressed: () {}, icon: const Icon(Icons.tune_sharp))
-          ],
+          elevation: 0,
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Stock Tracking',
+            style: TextStyle(color: Color(0xFF0072FF)),
+          ),
+          leading: IconButton(
+            color: Color(0xFF0072FF),
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context); // Navigate back to the previous screen
+            },
+          ),
         ),
         body: NestedScrollView(
             headerSliverBuilder: (BuildContext context, bool innerBoxScrolled) {

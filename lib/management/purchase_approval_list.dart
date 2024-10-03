@@ -190,7 +190,7 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
           height: 40,
           child: Marquee(
             text: 'Purchase Order Details - ${widget.poNumber}',
-            style: const TextStyle(color: Colors.teal),
+            style: const TextStyle(color: Color(0xFF0072FF)),
             scrollAxis: Axis.horizontal,
             crossAxisAlignment: CrossAxisAlignment.center,
             blankSpace: 20.0,
@@ -204,7 +204,7 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.teal),
+          icon: Icon(Icons.arrow_back, color: Color(0xFF0072FF)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -212,7 +212,7 @@ class _PurchaseOrderDetailState extends State<PurchaseOrderDetail> {
         actions: [
           IconButton(
             onPressed: () => viewPdf(context),
-            icon: Icon(Icons.picture_as_pdf, color: Colors.teal),
+            icon: Icon(Icons.picture_as_pdf, color: Color(0xFF0072FF)),
           ),
         ],
       ),

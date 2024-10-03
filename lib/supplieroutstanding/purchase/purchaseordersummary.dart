@@ -71,10 +71,10 @@ class _PurchaseOrderSummaryState extends State<PurchaseOrderSummary> {
         backgroundColor: Colors.white,
         title: const Text(
           'Purchase Order Summary',
-          style: TextStyle(color: Colors.teal),
+          style: TextStyle(color: Color(0xFF0072FF)),
         ),
         leading: IconButton(
-          color: Colors.teal,
+          color: Color(0xFF0072FF),
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Navigate back to the previous screen

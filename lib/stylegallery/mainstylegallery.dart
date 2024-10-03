@@ -76,12 +76,22 @@ class _MainStyleGalleryState extends State<MainStyleGallery> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Main - Style Gallery'),
-          centerTitle: true,
-          actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.restart_alt)),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.tune_sharp))
-          ],
+          elevation: 0,
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Style Gallery',
+            style: TextStyle(
+              color: Color(0xFF0072FF), // Rich Deep Blue
+            ),
+          ),
+          leading: IconButton(
+            color: Color(0xFF0072FF), // Rich Deep Blue
+
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context); // Navigate back to the previous screen
+            },
+          ),
         ),
         body: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -128,13 +138,16 @@ class _MainStyleGalleryState extends State<MainStyleGallery> {
                               },
                             ),
                             iconSize: 100,
+                            color: Color(0xFF0072FF), // Rich Deep Blue,
                             onPressed: () {
                               setfilterdetails(index);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          const StyleGallery()));
+                                      builder: (context) => StyleDetailsPage(
+                                            styleId:
+                                                _styleitems[index].styleid!,
+                                          )));
                             },
                           ),
                         ),
@@ -151,11 +164,14 @@ class _MainStyleGalleryState extends State<MainStyleGallery> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const StyleGallery()));
+                                        builder: (context) => StyleDetailsPage(
+                                              styleId:
+                                                  _styleitems[index].styleid!,
+                                            )));
                               },
                               child: Text(_styleitems[index].imagetite!,
                                   style: const TextStyle(
+                                    color: Color(0xFF0072FF), // Rich Deep Blue,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'callbri',
                                     letterSpacing: 0,

@@ -143,10 +143,10 @@ class _MainBudgetApprovalState extends State<MainBudgetApproval> {
         backgroundColor: Colors.white,
         title: const Text(
           'Main Budget Approval',
-          style: TextStyle(color: Colors.teal),
+          style: TextStyle(color: Color(0xFF0072FF)),
         ),
         leading: IconButton(
-          color: Colors.teal,
+          color: Color(0xFF0072FF),
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Navigate back to the previous screen

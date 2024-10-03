@@ -1,403 +1,191 @@
-//import 'package:apparelapp/profitlossreport/profitlossreport.dart';
-//import 'package:apparelapp/stock/orderwisestock.dart';
+import 'dart:convert';
 import 'package:apparelapp/main/app_config.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-//import 'package:apparelapp/orderstatus/orderstatus.dart';
-import 'package:apparelapp/axondatamodal/stylegallerydetailsdatamodal.dart';
-import 'package:apparelapp/axonlibrary/axongeneral.dart';
-import 'package:apparelapp/axondatamodal/axonfitrationmodal/stylegalleryfilter.dart';
 import 'package:http/http.dart' as http;
 
-class StyleGallery extends StatefulWidget {
-  const StyleGallery({super.key});
+class StyleDetailsPage extends StatefulWidget {
+  final int styleId;
+
+  StyleDetailsPage({required this.styleId});
 
   @override
-  State<StyleGallery> createState() => _StyleGalleryState();
+  _StyleDetailsPageState createState() => _StyleDetailsPageState();
 }
 
-class _StyleGalleryState extends State<StyleGallery> {
-  final List<StyleGalleryDetailDataModal> _styleitemsdetail = [];
-  final List<StyleGalleryDetailDataModal> _styleorderdetail = [];
-  String filterorderno = "";
-  int styleitemlength = 0;
-  double totalqty = 0;
+class _StyleDetailsPageState extends State<StyleDetailsPage> {
+  bool _isLoading = true;
+  bool _isError = false;
+  Map<String, dynamic>? _data;
 
   @override
   void initState() {
     super.initState();
-    getstyledetails();
+    _fetchStyleDetails();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _styleorderdetail.clear();
-    _styleitemsdetail.clear();
-  }
+  Future<void> _fetchStyleDetails() async {
+    final url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/getstyledetails?styleid=${widget.styleId}';
 
-  void getstyledetails() async {
-    dynamic responsedata;
-    var url =
-        'http://${AppConfig().host}:${AppConfig().port}/api/apistylgallery/$styleid';
-    var body = '''''';
-    String length = body.length.toString();
-    var headers = {
-      'Content-Type': 'application/json',
-      'Content-Length': length,
-      'Host': 'localhost',
-      'User-Agent': 'PostmanRuntime/7.30.0'
-    };
     try {
-      final response = await http.get(Uri.parse(url), headers: headers);
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        responsedata = json.decode(response.body.toString());
-        dynamic responsedata1 = json.decode(responsedata);
-        for (int i = 0; i < responsedata1.length; i++) {
-          dynamic data = StyleGalleryDetailDataModal.fromJson(responsedata1[i]);
-          _styleitemsdetail.add(StyleGalleryDetailDataModal(
-              data.orderno,
-              data.refno,
-              data.style,
-              data.quantity,
-              data.description,
-              data.color,
-              data.size,
-              data.despqty,
-              data.orderqty,
-              data.productionqty,
-              data.imgpath));
-          if (filterorderno.toString() == "" ||
-              filterorderno.toString() != data.orderno.toString()) {
-            _styleorderdetail.add(StyleGalleryDetailDataModal(
-                data.orderno,
-                data.refno,
-                data.style,
-                data.quantity,
-                data.description,
-                data.color,
-                data.size,
-                data.despqty,
-                data.orderqty,
-                data.productionqty,
-                data.imgpath));
-          }
-          filterorderno = data.orderno;
-        }
-
         setState(() {
-          _styleitemsdetail;
-          _styleorderdetail;
-          //styleitemlength = _styleitemsdetail.length;
-          styleitemlength = _styleorderdetail.length;
+          _data = json.decode(response.body);
+          _isLoading = false;
         });
-      } else {}
-    } catch (ex) {
-      throw ex.toString();
+      } else {
+        setState(() {
+          _isError = true;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isError = true;
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          elevation: 5,
-          centerTitle: true,
-          title: const Text('Style Gallery Details'),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Style Details',
+          style: TextStyle(
+            color: Color(0xFF0072FF), // Rich Deep Blue
+          ),
         ),
-        body: ListView.builder(
-          itemCount: styleitemlength,
-          itemBuilder: (context, index) {
-            return Column(children: [
-              Card(
-                margin: const EdgeInsets.all(10.0),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                color: Colors.white,
-                elevation: 20,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.all(10),
-                          margin: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              SizedBox(height: 22, child: Text('Order No :')),
-                              SizedBox(height: 22, child: Text('Refer No :')),
-                              SizedBox(height: 22, child: Text('Style    :')),
-                              SizedBox(height: 22, child: Text('Quantity :')),
-                              SizedBox(
-                                  height: 22, child: Text('Description :')),
-                            ],
+        leading: IconButton(
+          color: Color(0xFF0072FF), // Rich Deep Blue
+
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _isError
+              ? Center(child: Text('Error fetching data'))
+              : _data != null && _data!['success'] == true
+                  ? ListView.builder(
+                      itemCount: _data!['styleDetails'].length,
+                      itemBuilder: (context, index) {
+                        final styleDetail = _data!['styleDetails'][index];
+                        // Constructing the full image URL
+                        String imgPath =
+                            'http://${AppConfig().host}:${AppConfig().attachment_port}${styleDetail['Imgpath']?.replaceAll('~', '') ?? ''}';
+
+                        return Card(
+                          elevation: 5,
+                          margin:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.all(10),
-                          margin: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                  height: 22,
-                                  child:
-                                      Text(_styleorderdetail[index].orderno!)),
-                              SizedBox(
-                                  height: 22,
-                                  child: Text(_styleorderdetail[index].refno!)),
-                              SizedBox(
-                                  height: 22,
-                                  child: Text(_styleorderdetail[index].style!)),
-                              SizedBox(
-                                  height: 22,
-                                  child: Text(_styleorderdetail[index]
-                                      .quantity!
-                                      .toString())),
-                              SizedBox(
-                                  height: 22,
-                                  child: Text(_styleorderdetail[index]
-                                      .description
-                                      .toString())),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.all(10),
-                          margin: const EdgeInsets.all(10),
-                          child: Column(
-                            children: [
-                              Image(
-                                image: NetworkImage(
-                                    '$hostname:$port${_styleorderdetail[index].imgpath!.replaceAll('~', '')}'),
-                                height: 50,
-                                width: 50,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  return Image(
-                                    image: NetworkImage(
-                                        '$hostname:$port${_styleorderdetail[index].imgpath!.replaceAll('~', '')}'),
-                                    height: 50,
-                                    width: 50,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size: 5,
-                                      );
-                                    },
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.image_not_supported_outlined,
-                                    size: 5,
-                                  );
-                                },
+                          child: ListTile(
+                            contentPadding: EdgeInsets.all(16),
+                            leading: Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              const SizedBox(height: 10),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      //mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        SizedBox(
-                          height: 10,
-                          child: Text('       '),
-                        ),
-                        /* SizedBox(height: 20, child: Text('Live stage :')), */
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      //mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        SizedBox(
-                          height: 10,
-                          child: Text('       '),
-                        ),
-                        /* SizedBox(
-                            height: 30,
-                            child: Text(
-                              'Yarn purchse made for partial quantity (100 KGS)  ',
-                              maxLines: 3,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            )), */
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      //mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        SizedBox(
-                          height: 10,
-                          child: Text('       '),
-                        ),
-                        SizedBox(
-                          height: 20,
-                          child: Text(
-                            'Color & Size wise details:- ',
-                            maxLines: 1,
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.all(0),
-                          margin: const EdgeInsets.all(0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 22, child: Text(' ')),
-                              SizedBox(
-                                  height: 22,
-                                  child: Text(_styleorderdetail[index]
-                                      .color
-                                      .toString())),
-                            ],
-                          ),
-                        ),
-                        for (int i = 0; i < _styleitemsdetail.length; i++) ...[
-                          if (_styleitemsdetail[i].orderno.toString() ==
-                                  _styleorderdetail[index].orderno.toString() &&
-                              _styleitemsdetail[i].style.toString() ==
-                                  _styleorderdetail[index]
-                                      .style
-                                      .toString()) ...[
-                            Container(
-                              alignment: Alignment.centerLeft,
-                              padding: const EdgeInsets.all(0),
-                              margin: const EdgeInsets.all(0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                      height: 22,
-                                      child: Text(_styleitemsdetail[i]
-                                          .size
-                                          .toString())),
-                                  SizedBox(
-                                      height: 22,
-                                      child: Text(_styleitemsdetail[i]
-                                          .orderqty
-                                          .toString())),
-                                ],
+                              child: const Icon(
+                                Icons
+                                    .style, // You can change this to any relevant icon
+                                color: Colors.white,
                               ),
                             ),
-                          ],
-                        ],
-                        /* for total order qty details of concern order                        
-                         Container(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.all(0),
-                          margin: const EdgeInsets.all(0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              SizedBox(height: 22, child: Text('Total')),
-                              SizedBox(height: 22, child: Text('')),
-                            ],
+                            title: Text(
+                              "Style: ${styleDetail['Style'] ?? 'N/A'}",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Buyer: ${styleDetail['Buyer'] ?? 'N/A'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Order No: ${styleDetail['OrderNo'] ?? 'N/A'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Ref No: ${styleDetail['RefNo'] ?? 'N/A'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Description: ${styleDetail['Description'] ?? 'N/A'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Order Qty: ${styleDetail['OrderQty'] ?? '0'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Despatch Qty: ${styleDetail['DespQty'] ?? '0'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 50),
+                                // Display the image from the constructed URL
+                                Image.network(
+                                  imgPath,
+                                  height: 100, // Set height as needed
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Text(
+                                      "Image not found",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.red,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ), */
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                      width: 10,
-                    ),
-                    /* For Next page movement code (order status,stock and costing report)                   
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          height: 30,
-                          child: ElevatedButton(
-                              style: const ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStatePropertyAll(Colors.blue)),
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const OrderStatus()));
-                              },
-                              child: const Text(
-                                'Status',
-                                style: TextStyle(),
-                              )),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                          width: 10,
-                        ),
-                        SizedBox(
-                          height: 30,
-                          child: ElevatedButton(
-                              style: const ButtonStyle(
-                                  backgroundColor: MaterialStatePropertyAll(
-                                      Colors.deepOrange)),
-                              onPressed: () {
-                                _styleorderdetail[index].orderno.toString();
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const OrderWiseStock()));
-                              },
-                              child: const Text('Stock')),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                          width: 10,
-                        ),
-                        SizedBox(
-                          height: 30,
-                          child: ElevatedButton(
-                              style: const ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStatePropertyAll(Colors.indigo)),
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ProfitLossReport()));
-                              },
-                              child: const Text('Costing')),
-                        ),
-                        const SizedBox(height: 40),
-                      ],
-                    ), */
-                  ],
-                ),
-              ),
-              //_widgetOptions.elementAt(_selectedIndex),
-            ]);
-          },
-        ));
+                        );
+                      },
+                    )
+                  : Center(child: Text('No style details found')),
+    );
   }
 }

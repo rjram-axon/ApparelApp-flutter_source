@@ -196,7 +196,7 @@ class _ProcessPrgAppEditPageState extends State<ProcessPrgAppEditPage> {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Colors.teal,
+            color: Color(0xFF0072FF),
           ),
           onPressed: () {
             Navigator.pop(context);
@@ -206,7 +206,7 @@ class _ProcessPrgAppEditPageState extends State<ProcessPrgAppEditPage> {
           height: 40,
           child: Marquee(
             text: '${_processPrgEditList.first.prodprgno}',
-            style: TextStyle(color: Colors.teal),
+            style: TextStyle(color: Color(0xFF0072FF)),
             scrollAxis: Axis.horizontal,
             crossAxisAlignment: CrossAxisAlignment.center,
             blankSpace: 20.0,

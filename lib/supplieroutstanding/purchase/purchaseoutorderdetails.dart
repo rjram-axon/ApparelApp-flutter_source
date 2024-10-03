@@ -45,7 +45,19 @@ class _PurchaseOrderDetailsPageState extends State<PurchaseOrderDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Purchase Order Details'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Purchase OutstandingOrder Details',
+          style: TextStyle(color: Color(0xFF0072FF)),
+        ),
+        leading: IconButton(
+          color: Color(0xFF0072FF),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: FutureBuilder<List<PurchaseOrder>>(
         future: _futurePurchaseOrders,

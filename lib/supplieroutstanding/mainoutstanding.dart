@@ -14,7 +14,19 @@ class _MainOutstandingListState extends State<MainOutstandingList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Main Outstanding"),
+          elevation: 0,
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Main Outstanding',
+            style: TextStyle(color: Color(0xFF0072FF)),
+          ),
+          leading: IconButton(
+            color: Color(0xFF0072FF),
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context); // Navigate back to the previous screen
+            },
+          ),
         ),
         body: Column(
           children: [

@@ -97,10 +97,10 @@ class _PurchaseQuotationApprovalPageState
         backgroundColor: Colors.white,
         title: const Text(
           'Purchase Quotation Approval',
-          style: TextStyle(color: Colors.teal),
+          style: TextStyle(color: Color(0xFF0072FF)),
         ),
         leading: IconButton(
-          color: Colors.teal,
+          color: Color(0xFF0072FF),
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Navigate back to the previous screen

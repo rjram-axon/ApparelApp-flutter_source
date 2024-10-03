@@ -73,7 +73,19 @@ class _ProcessOutstandingState extends State<ProcessOutstanding> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(status),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Supplier Wise Outstanding',
+          style: TextStyle(color: Color(0xFF0072FF)),
+        ),
+        leading: IconButton(
+          color: Color(0xFF0072FF),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: ListView.builder(
           itemCount: listlength,

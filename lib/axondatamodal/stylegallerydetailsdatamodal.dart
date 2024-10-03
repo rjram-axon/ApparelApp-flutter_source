@@ -1,4 +1,5 @@
 class StyleGalleryDetailDataModal {
+  String? buyer;
   String? orderno;
   String? refno;
   String? style;
@@ -12,6 +13,7 @@ class StyleGalleryDetailDataModal {
   String? imgpath;
 
   StyleGalleryDetailDataModal(
+      this.buyer,
       this.orderno,
       this.refno,
       this.style,
@@ -40,6 +42,7 @@ class StyleGalleryDetailDataModal {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['buyer'] = buyer;
     data['order_no'] = orderno;
     data['Ref_No'] = refno;
     data['style'] = style;

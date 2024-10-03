@@ -83,7 +83,21 @@ class _GroupWiseStockState extends State<GroupWiseStock> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(stocklibrary.grouptitlename)),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Stock - Group Wise Summary',
+          style: TextStyle(color: Color(0xFF0072FF)),
+        ),
+        leading: IconButton(
+          color: Color(0xFF0072FF),
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+      ),
       body: ListView.builder(
           itemCount: listlength,
           itemBuilder: ((context, index) {

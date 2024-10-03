@@ -2,9 +2,11 @@ import 'package:apparelapp/axondatamodal/axonfitrationmodal/orderwisestockfilter
 import 'package:apparelapp/housekeeping/about.dart';
 import 'package:apparelapp/main.dart';
 import 'package:apparelapp/main/loginscreen.dart';
+import 'package:apparelapp/main/pie_chart.dart';
 import 'package:apparelapp/management/approvals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../axonlibrary/axongeneral.dart';
@@ -27,63 +29,14 @@ class MyDrawerPage extends StatefulWidget {
   State<MyDrawerPage> createState() => _MyDrawerPageState();
 }
 
-class PieChartWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return PieChart(
-      PieChartData(
-        sections: [
-          PieChartSectionData(
-            color: Colors.blue,
-            value: 40,
-            title: '40%',
-            radius: 50,
-            titleStyle: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          PieChartSectionData(
-            color: Colors.red,
-            value: 30,
-            title: '30%',
-            radius: 50,
-            titleStyle: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          PieChartSectionData(
-            color: Colors.green,
-            value: 20,
-            title: '20%',
-            radius: 50,
-            titleStyle: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          PieChartSectionData(
-            color: Colors.orange,
-            value: 10,
-            title: '10%',
-            radius: 50,
-            titleStyle: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ],
-        sectionsSpace: 0,
-        centerSpaceRadius: 40,
-        borderData: FlBorderData(show: false),
-      ),
-    );
-  }
-}
-
 class _MyDrawerPageState extends State<MyDrawerPage> {
   final CarouselController _carouselController = CarouselController();
   final PageController _pageController = PageController();
   int _current = 0;
 
   final List<dynamic> _cardContents = [
-    'Welcome to Apparel+ ERP',
-    'Card 2 Content',
+    'Welcome to Axon Apparel+ ERP',
     'pieChart', // Special identifier for pie chart
-    'Card 4 Content',
   ];
   @override
   void dispose() {
@@ -108,11 +61,11 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
             backgroundColor: Colors.white,
             title: const Text(
               'Apparel+  Cloud',
-              style: TextStyle(color: Colors.teal),
+              style: TextStyle(color: Color(0xFF0072FF)),
             ),
             centerTitle: true,
             iconTheme: const IconThemeData(
-              color: Colors.teal,
+              color: Color(0xFF00C6FF),
             ),
             actions: <Widget>[
               Center(
@@ -194,7 +147,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                   },
                   icon: const Icon(
                     Icons.power_settings_new_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF0072FF),
                   ),
                 ),
               ),
@@ -209,8 +162,10 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                   itemCount: _cardContents.length,
                   itemBuilder: (context, index, realIndex) {
                     // Show pie chart at a specific index, e.g., index 2
-                    if (index == 2) {
+                    if (index == 1) {
                       return PieChartWidget();
+                    } else if (index == 0) {
+                      return buildCardWithImage(_cardContents[index]);
                     }
                     // Otherwise, build the regular card
                     return buildCard(_cardContents[index]);
@@ -236,7 +191,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                   count: _cardContents.length,
                   effect: ExpandingDotsEffect(
                     expansionFactor: 2,
-                    activeDotColor: Colors.teal,
+                    activeDotColor: Color(0xFF0072FF),
                     dotHeight: 8,
                     dotWidth: 8,
                   ),
@@ -257,7 +212,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                         true, // Ensures GridView takes only the required space
                     children: <Widget>[
                       Card(
-                        shadowColor: Colors.amber.withOpacity(0.4),
+                        shadowColor: Colors.amber.withOpacity(0.20),
                         elevation: 10,
                         shape: RoundedRectangleBorder(
                           side: BorderSide(
@@ -273,21 +228,36 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           children: <Widget>[
                             Expanded(
                               child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon: const Icon(Icons.approval),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => Approvals(),
+                                child: Container(
+                                  alignment: Alignment
+                                      .center, // Ensures icon is centered
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height:
+                                              30), // Adjust the height as needed
+                                      ShaderMask(
+                                        shaderCallback: (Rect bounds) {
+                                          return LinearGradient(
+                                            colors: [
+                                              Color(
+                                                  0xFF00C6FF), // Electric Blue
+                                              Color(
+                                                  0xFF0072FF), // Rich Deep Blue
+                                              Color(0xFF00FFAA), // Neon Green
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ).createShader(bounds);
+                                        },
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.stamp,
+                                          size: 70,
+                                          color: Colors
+                                              .white, // White icon to ensure gradient visibility
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -318,6 +288,69 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           ],
                         ),
                       ),
+                      // Card(
+                      //   shadowColor: Colors.amber.withOpacity(0.4),
+                      //   elevation: 10,
+                      //   shape: RoundedRectangleBorder(
+                      //     side: BorderSide(
+                      //       color: Theme.of(context).colorScheme.outline,
+                      //       style: BorderStyle.solid,
+                      //     ),
+                      //     borderRadius:
+                      //         const BorderRadius.all(Radius.circular(30)),
+                      //   ),
+                      //   child: Column(
+                      //     mainAxisAlignment: MainAxisAlignment.center,
+                      //     crossAxisAlignment: CrossAxisAlignment.center,
+                      //     children: <Widget>[
+                      //       Expanded(
+                      //         child: Center(
+                      //           child: SizedBox(
+                      //             width: dashboard.maxsizedboxwidth,
+                      //             height: dashboard.minimagesizeboxheight,
+                      //             child: IconButton(
+                      //               color: Colors.teal[500],
+                      //               icon: const Icon(Icons.update_rounded),
+                      //               iconSize: 70,
+                      //               onPressed: () {
+                      //                 Navigator.push(
+                      //                   context,
+                      //                   MaterialPageRoute(
+                      //                     builder: (context) =>
+                      //                         MainOrderStatus(),
+                      //                   ),
+                      //                 );
+                      //               },
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //       Padding(
+                      //         padding: const EdgeInsets.only(bottom: 8.0),
+                      //         child: TextButton(
+                      //           onPressed: () {
+                      //             Navigator.push(
+                      //               context,
+                      //               MaterialPageRoute(
+                      //                 builder: (context) => MainOrderStatus(),
+                      //               ),
+                      //             );
+                      //           },
+                      //           child: Text(
+                      //             'Order Status',
+                      //             style: TextStyle(
+                      //               color: Colors.black87,
+                      //               fontWeight: FontWeight.bold,
+                      //               fontFamily: 'roboto',
+                      //               letterSpacing: 0,
+                      //               fontSize: 13,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                       Card(
                         shadowColor: Colors.amber.withOpacity(0.4),
                         elevation: 10,
@@ -335,85 +368,36 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           children: <Widget>[
                             Expanded(
                               child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon: const Icon(Icons.update_rounded),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              MainOrderStatus(),
+                                child: Container(
+                                  alignment: Alignment
+                                      .center, // Ensures icon is centered
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height:
+                                              30), // Adjust the height as needed
+                                      ShaderMask(
+                                        shaderCallback: (Rect bounds) {
+                                          return LinearGradient(
+                                            colors: [
+                                              Color(
+                                                  0xFF00C6FF), // Electric Blue
+                                              Color(
+                                                  0xFF0072FF), // Rich Deep Blue
+                                              Color(0xFF00FFAA), // Neon Green
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ).createShader(bounds);
+                                        },
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.images,
+                                          size: 70,
+                                          color: Colors
+                                              .white, // White icon to ensure gradient visibility
                                         ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MainOrderStatus(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Order Status',
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'roboto',
-                                    letterSpacing: 0,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Card(
-                        shadowColor: Colors.amber.withOpacity(0.4),
-                        elevation: 10,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outline,
-                            style: BorderStyle.solid,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(30)),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon: const Icon(Icons.image_outlined),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              MainStyleGallery(),
-                                        ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -461,22 +445,36 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           children: <Widget>[
                             Expanded(
                               child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon:
-                                        const Icon(Icons.inventory_2_outlined),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => MainStock(),
+                                child: Container(
+                                  alignment: Alignment
+                                      .center, // Ensures icon is centered
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height:
+                                              30), // Adjust the height as needed
+                                      ShaderMask(
+                                        shaderCallback: (Rect bounds) {
+                                          return LinearGradient(
+                                            colors: [
+                                              Color(
+                                                  0xFF00C6FF), // Electric Blue
+                                              Color(
+                                                  0xFF0072FF), // Rich Deep Blue
+                                              Color(0xFF00FFAA), // Neon Green
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ).createShader(bounds);
+                                        },
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.warehouse,
+                                          size: 70,
+                                          color: Colors
+                                              .white, // White icon to ensure gradient visibility
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -507,6 +505,132 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           ],
                         ),
                       ),
+                      // Card(
+                      //   shadowColor: Colors.amber.withOpacity(0.4),
+                      //   elevation: 10,
+                      //   shape: RoundedRectangleBorder(
+                      //     side: BorderSide(
+                      //       color: Theme.of(context).colorScheme.outline,
+                      //       style: BorderStyle.solid,
+                      //     ),
+                      //     borderRadius:
+                      //         const BorderRadius.all(Radius.circular(30)),
+                      //   ),
+                      //   child: Column(
+                      //     mainAxisAlignment: MainAxisAlignment.center,
+                      //     crossAxisAlignment: CrossAxisAlignment.center,
+                      //     children: <Widget>[
+                      //       Expanded(
+                      //         child: Center(
+                      //           child: SizedBox(
+                      //             width: dashboard.maxsizedboxwidth,
+                      //             height: dashboard.minimagesizeboxheight,
+                      //             child: IconButton(
+                      //               color: Colors.teal[500],
+                      //               icon: const Icon(
+                      //                   Icons.assignment_turned_in_outlined),
+                      //               iconSize: 70,
+                      //               onPressed: () {
+                      //                 Navigator.push(
+                      //                   context,
+                      //                   MaterialPageRoute(
+                      //                     builder: (context) => CostingReport(),
+                      //                   ),
+                      //                 );
+                      //               },
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //       Padding(
+                      //         padding: const EdgeInsets.only(bottom: 8.0),
+                      //         child: TextButton(
+                      //           onPressed: () {
+                      //             Navigator.push(
+                      //               context,
+                      //               MaterialPageRoute(
+                      //                 builder: (context) => CostingReport(),
+                      //               ),
+                      //             );
+                      //           },
+                      //           child: Text(
+                      //             'Costing Report',
+                      //             style: TextStyle(
+                      //               color: Colors.black87,
+                      //               fontWeight: FontWeight.bold,
+                      //               fontFamily: 'roboto',
+                      //               letterSpacing: 0,
+                      //               fontSize: 13,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      // Card(
+                      //   shadowColor: Colors.amber.withOpacity(0.4),
+                      //   elevation: 10,
+                      //   shape: RoundedRectangleBorder(
+                      //     side: BorderSide(
+                      //       color: Theme.of(context).colorScheme.outline,
+                      //       style: BorderStyle.solid,
+                      //     ),
+                      //     borderRadius:
+                      //         const BorderRadius.all(Radius.circular(30)),
+                      //   ),
+                      //   child: Column(
+                      //     mainAxisAlignment: MainAxisAlignment.center,
+                      //     crossAxisAlignment: CrossAxisAlignment.center,
+                      //     children: <Widget>[
+                      //       Expanded(
+                      //         child: Center(
+                      //           child: SizedBox(
+                      //             width: dashboard.maxsizedboxwidth,
+                      //             height: dashboard.minimagesizeboxheight,
+                      //             child: IconButton(
+                      //               color: Colors.teal[500],
+                      //               icon: const Icon(Icons.difference_outlined),
+                      //               iconSize: 70,
+                      //               onPressed: () {
+                      //                 Navigator.push(
+                      //                   context,
+                      //                   MaterialPageRoute(
+                      //                     builder: (context) =>
+                      //                         ProfitLossReport(),
+                      //                   ),
+                      //                 );
+                      //               },
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //       Padding(
+                      //         padding: const EdgeInsets.only(bottom: 8.0),
+                      //         child: TextButton(
+                      //           onPressed: () {
+                      //             Navigator.push(
+                      //               context,
+                      //               MaterialPageRoute(
+                      //                 builder: (context) => ProfitLossReport(),
+                      //               ),
+                      //             );
+                      //           },
+                      //           child: Text(
+                      //             'Profit & Loss Report',
+                      //             style: TextStyle(
+                      //               color: Colors.black87,
+                      //               fontWeight: FontWeight.bold,
+                      //               fontFamily: 'roboto',
+                      //               letterSpacing: 0,
+                      //               fontSize: 13,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                       Card(
                         shadowColor: Colors.amber.withOpacity(0.4),
                         elevation: 10,
@@ -524,149 +648,37 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           children: <Widget>[
                             Expanded(
                               child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon: const Icon(
-                                        Icons.assignment_turned_in_outlined),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CostingReport(),
+                                child: Container(
+                                  alignment: Alignment
+                                      .center, // Ensures icon is centered
+
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                          height:
+                                              30), // Adjust the height as needed
+                                      ShaderMask(
+                                        shaderCallback: (Rect bounds) {
+                                          return LinearGradient(
+                                            colors: [
+                                              Color(
+                                                  0xFF00C6FF), // Electric Blue
+                                              Color(
+                                                  0xFF0072FF), // Rich Deep Blue
+                                              Color(0xFF00FFAA), // Neon Green
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ).createShader(bounds);
+                                        },
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.chartBar,
+                                          size: 70,
+                                          color: Colors
+                                              .white, // White icon to ensure gradient visibility
                                         ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CostingReport(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Costing Report',
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'roboto',
-                                    letterSpacing: 0,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Card(
-                        shadowColor: Colors.amber.withOpacity(0.4),
-                        elevation: 10,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outline,
-                            style: BorderStyle.solid,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(30)),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon: const Icon(Icons.difference_outlined),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProfitLossReport(),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProfitLossReport(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Profit & Loss Report',
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'roboto',
-                                    letterSpacing: 0,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Card(
-                        shadowColor: Colors.amber.withOpacity(0.4),
-                        elevation: 10,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outline,
-                            style: BorderStyle.solid,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(30)),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon:
-                                        const Icon(Icons.inventory_2_outlined),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              GroupWiseStock(),
-                                        ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -714,23 +726,37 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                           children: <Widget>[
                             Expanded(
                               child: Center(
-                                child: SizedBox(
-                                  width: dashboard.maxsizedboxwidth,
-                                  height: dashboard.minimagesizeboxheight,
-                                  child: IconButton(
-                                    color: Colors.teal[500],
-                                    icon: const Icon(
-                                        Icons.local_shipping_outlined),
-                                    iconSize: 70,
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              MainOutstandingList(),
+                                child: Container(
+                                  alignment: Alignment
+                                      .center, // Ensures icon is centered
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                          height:
+                                              30), // Adjust the height as needed
+                                      ShaderMask(
+                                        shaderCallback: (Rect bounds) {
+                                          return LinearGradient(
+                                            colors: [
+                                              Color(
+                                                  0xFF00C6FF), // Electric Blue
+                                              Color(
+                                                  0xFF0072FF), // Rich Deep Blue
+                                              Color(0xFF00FFAA), // Neon Green
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ).createShader(bounds);
+                                        },
+                                        child: const FaIcon(
+                                          FontAwesomeIcons.bell,
+                                          size: 70,
+                                          color: Colors
+                                              .white, // White icon to ensure gradient visibility
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -753,8 +779,8 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                                     color: Colors.black87,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'roboto',
-                                    letterSpacing: 0,
-                                    fontSize: 13,
+                                    letterSpacing: 1,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
@@ -778,7 +804,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
               children: [
                 DrawerHeader(
                   decoration: const BoxDecoration(
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -813,7 +839,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.dashboard_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Home (Dashboard)'),
                   onTap: () {
@@ -826,7 +852,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.approval,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Purchase Approval'),
                   onTap: () {
@@ -839,7 +865,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.approval,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Budget Approval'),
                   onTap: () {
@@ -852,7 +878,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.image_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Style gallery'),
                   onTap: () {
@@ -865,7 +891,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.my_library_books_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Order status'),
                   onTap: () {
@@ -878,7 +904,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.warehouse_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Order wise stock'),
                   onTap: () {
@@ -891,7 +917,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.request_quote_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Costing report'),
                   onTap: () {
@@ -904,7 +930,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.difference_outlined,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Profit & Loss'),
                   onTap: () {
@@ -917,7 +943,7 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.settings,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('Settings'),
                   onTap: () {
@@ -930,12 +956,23 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
                 ListTile(
                   leading: const Icon(
                     Icons.info_outline,
-                    color: Colors.teal,
+                    color: Color(0xFF00C6FF),
                   ),
                   title: const Text('About'),
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const About()));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.security,
+                    color: Color(0xFF00C6FF),
+                  ),
+                  title: const Text('Privacy Policy'),
+                  onTap: () {
+                    // Navigator.push(context,
+                    //     MaterialPageRoute(builder: (context) => const About()));
                   },
                 ),
               ],
@@ -960,6 +997,47 @@ class _MyDrawerPageState extends State<MyDrawerPage> {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Method to build a card with an image
+  Widget buildCardWithImage(String content) {
+    return Container(
+      height: 600.0,
+      width: 600.0, // Manually set the card width
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/axon_logo.png', // Your image path
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 10),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    content,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

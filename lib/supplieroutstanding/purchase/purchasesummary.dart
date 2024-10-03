@@ -1,11 +1,9 @@
 import 'dart:convert';
-
 import 'package:apparelapp/axonlibrary/axongeneral.dart';
 import 'package:apparelapp/main/app_config.dart';
 import 'package:apparelapp/supplieroutstanding/purchase/purchaseordersummary.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import '../../axondatamodal/axonfitrationmodal/processoutstandingfilter.dart';
 import '../../axondatamodal/processoutstandingmodal.dart';
 
@@ -85,63 +83,97 @@ class _PurchasesummaryState extends State<Purchasesummary> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(status),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Purchase Outstanding Details',
+          style: TextStyle(color: Color(0xFF0072FF)),
+        ),
+        leading: IconButton(
+          color: Color(0xFF0072FF),
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: ListView.builder(
-          itemCount: listlength,
-          itemBuilder: ((context, index) {
-            return Column(
-              children: [
-                Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.shopping_basket_outlined,
-                      color: Colors.purple,
-                    ),
-                    title: Text(
-                        _itemlist[index].supplier.toString().toUpperCase()),
-                    trailing: Text(
-                      '${_itemlist[index].balanceqty.toString()} ${_itemlist[index].outuom.toString()}',
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        const Icon(
-                          Icons.arrow_upward_rounded,
-                          color: Colors.blueAccent,
-                          size: 15,
-                        ),
-                        Text(_itemlist[index].issueqty.toString()),
-                        const Icon(
-                          Icons.arrow_downward_rounded,
-                          color: Colors.green,
-                          size: 15,
-                        ),
-                        Text(_itemlist[index].receivedqty.toString()),
-                      ],
-                    ),
-                    onTap: () {
-                      int supplierId = _itemlist[index].supplierid ??
-                          0; // Provide a default value if supplierid is null
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              PurchaseOrderSummary(supplierId: supplierId),
-                        ),
-                      );
-                    },
+        itemCount: listlength,
+        itemBuilder: ((context, index) {
+          return Column(
+            children: [
+              Card(
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.shopping_basket_outlined,
+                    color: Colors.purple,
                   ),
+                  title: Text(
+                    _itemlist[index].supplier.toString().toUpperCase(),
+                  ),
+                  trailing: Text(
+                    '${_itemlist[index].balanceqty.toString()} ${_itemlist[index].outuom.toString()}',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Issued: ',
+                            style: TextStyle(
+                              color: Colors.blueAccent,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            _itemlist[index].issueqty.toString(),
+                            style: TextStyle(
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5), // Add spacing between the lines
+                      Row(
+                        children: [
+                          Text(
+                            'Received: ',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            _itemlist[index].receivedqty.toString(),
+                            style: TextStyle(
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    int supplierId = _itemlist[index].supplierid ?? 0;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PurchaseOrderSummary(supplierId: supplierId),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            );
-          })),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 }

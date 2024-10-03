@@ -203,10 +203,10 @@ class _MainPurchaseApprovalState extends State<MainPurchaseApproval> {
         backgroundColor: Colors.white,
         title: const Text(
           'PurchaseOrder Approval List',
-          style: TextStyle(color: Colors.teal),
+          style: TextStyle(color: Color(0xFF0072FF)),
         ),
         leading: IconButton(
-          color: Colors.teal,
+          color: Color(0xFF0072FF),
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Navigate back to the previous screen
