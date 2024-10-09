@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../axondatamodal/axonfitrationmodal/budgerapprovalmainlist.dart';
+
 class PieChartWidget extends StatefulWidget {
   @override
   _PieChartWidgetState createState() => _PieChartWidgetState();
@@ -37,6 +39,8 @@ class _PieChartWidgetState extends State<PieChartWidget> {
   bool _showPurchaseQuotationApp = false;
   bool _showProcessQuotationApproval = false;
   bool _showPieChart = false;
+  bool _isLoading = false; // Variable to track data fetching state
+  int budgetpendingCount = 0;
 
   List<int> menuidList = [
     78,
@@ -57,6 +61,7 @@ class _PieChartWidgetState extends State<PieChartWidget> {
         .then((_) => _processOrdAppPendingCount())
         .then((_) => fetchPendingsplreqCount())
         .then((_) => fetchprocessprgapppending())
+        .then((_) => getBudgetCount())
         .then((_) {
       setState(() {
         _loading = false;
@@ -189,13 +194,12 @@ class _PieChartWidgetState extends State<PieChartWidget> {
                       case 2489:
                         _showProcessOrderApproval = role['Addflag'] == 1;
                         break;
-                      case 300: // Add Menuid for Pie Chart
-                        _showPieChart =
-                            role['Addflag'] == 1; // Flag for PieChart
-                        break;
+
                       default:
                         break;
                     }
+                    print(
+                        "Menuid: ${role['Menuid']}, Addflag: ${role['Addflag']}");
                   });
                 }
               }
@@ -386,6 +390,48 @@ class _PieChartWidgetState extends State<PieChartWidget> {
     }
   }
 
+  Future<void> getBudgetCount() async {
+    setState(() {
+      _isLoading = true; // Set loading state to true
+    });
+
+    var url =
+        'http://${AppConfig().host}:${AppConfig().port}/api/apibudgetapproval?type=BUDGET&ordtype=$bordertype&fromdate=01/06/2021&todate=30/05/2025';
+
+    var headers = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'PostmanRuntime/7.30.0'
+    };
+
+    try {
+      final response = await http.get(Uri.parse(url), headers: headers);
+      if (response.statusCode == 200) {
+        var responsedata = json.decode(response.body.toString());
+
+        // Ensure the response is a list and count the items with type 'BUDGET'
+        if (responsedata is List) {
+          budgetpendingCount =
+              responsedata.where((item) => item['type'] == "BUDGET").length;
+        } else {
+          print("Unexpected data format");
+        }
+
+        setState(() {
+          // Use budgetpendingCount as needed, for example:
+          print("Number of BUDGET items: $budgetpendingCount");
+        });
+      } else {
+        print("Error: ${response.statusCode}");
+      }
+    } catch (ex) {
+      print('Error: $ex');
+    } finally {
+      setState(() {
+        _isLoading = false; // Set loading state to false
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -501,10 +547,10 @@ class _PieChartWidgetState extends State<PieChartWidget> {
   List<_PieSection> _getActiveSections() {
     List<_PieSection> activeSections = [];
 
-    if (_showProcessOrderApproval) {
+    if (_showPurchaseApproval) {
       activeSections.add(_PieSection(
-        title: 'Process App',
-        value: processordapppending.toDouble(),
+        title: 'Budget App',
+        value: 10,
         color: Color(0xFF6A0DAD), // Royal Purple
         index: 0,
       ));
@@ -523,7 +569,7 @@ class _PieChartWidgetState extends State<PieChartWidget> {
     activeSections.add(
       _PieSection(
         title: 'Shortage App',
-        value: 100,
+        value: 1,
         color: Color(0xFFFF8C00), // Dark Orange
         index: 2,
       ),
@@ -574,7 +620,7 @@ class _PieChartWidgetState extends State<PieChartWidget> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProcessApprovalPage(),
+            builder: (context) => MainBudgetApproval(),
           ),
         );
         break;
@@ -612,20 +658,20 @@ class _PieChartWidgetState extends State<PieChartWidget> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                ProcessProgramApprovalPage(), // Replace with the actual page
-          ),
-        );
-        break;
-      case 4:
-        // Navigate to SpecialRequisitionApprovalPage (Purple section)
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
                 SpecialRequitionApprovalPage(), // Replace with the actual page
           ),
         );
         break;
+      // case 4:
+      //   // Navigate to SpecialRequisitionApprovalPage (Purple section)
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) =>
+      //           SpecialRequitionApprovalPage(), // Replace with the actual page
+      //     ),
+      //   );
+      //   break;
       default:
         // Handle other cases or show a default page
         break;

@@ -124,7 +124,7 @@ class _PurchasesummaryState extends State<Purchasesummary> {
                       Row(
                         children: [
                           Text(
-                            'Issued: ',
+                            'Po Quantity: ',
                             style: TextStyle(
                               color: Colors.blueAccent,
                               fontSize: 15,
@@ -142,7 +142,7 @@ class _PurchasesummaryState extends State<Purchasesummary> {
                       Row(
                         children: [
                           Text(
-                            'Received: ',
+                            'Received Qty: ',
                             style: TextStyle(
                               color: Colors.green,
                               fontSize: 15,

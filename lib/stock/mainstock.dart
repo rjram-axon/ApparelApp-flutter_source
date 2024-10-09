@@ -80,21 +80,7 @@ class _MainStockState extends State<MainStock> {
   }
 
   Future<void> getstocksummary() async {
-    /* Local variable declaration for getting details & passing parameters*/
     dynamic responsedata;
-/*     String? compy = "";
-    String? ordno = "";
-    String? refno = "";
-    String? sty = "";
-    String? item = "";
-    String? color = "";
-    String? size = "";
-    String? store = "";
-    int? itemid = 0;
-    int? colorid = 0;
-    int? sizeid = 0; */
-
-    /* Checking with the filtration is empty or not & passing parameter values*/
 
     if (companyValue.toString() == "" ||
         companyValue.toString() == "-- Select Company--") {
@@ -124,11 +110,9 @@ class _MainStockState extends State<MainStock> {
       sty = styleValue;
     }
 
-    /* Getting the data from the concern project using API (Application programming Interface) */
     var url =
-        'http://${AppConfig().host}:${AppConfig().port}/api/apistockstatus'; // This is API Url
+        'http://${AppConfig().host}:${AppConfig().port}/api/apistockstatus';
 
-    /* This is body content to send the API */
     var body = json.encode({
       "companyid": compy,
       "Order_no": ordno,
@@ -144,49 +128,67 @@ class _MainStockState extends State<MainStock> {
       "Storename": store,
       "Storeid": store
     });
-    String length =
-        body.length.toString(); // Getting body length from body variable
+
+    String length = body.length.toString();
     var headers = {
       'Content-Type': 'application/json',
       'Content-Length': length,
       'Host': 'apparelmvc',
       'User-Agent': 'PostmanRuntime/7.30.0'
-    }; // This is header content to send the API Link
+    };
 
     try {
-      final response = await http.post(Uri.parse(url),
-          headers: headers,
-          body:
-              body); // Api (POST) method syntax for sending contents & getting concern details
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: body);
       if (response.statusCode == 200) {
         responsedata = jsonDecode(response.body);
         responsedata = json.decode(responsedata[0]);
         int rlength = responsedata.length;
-        _stocksummary.add(responsedata);
+
+        Map<String, StockMainListDataModal> groupedItems = {};
+
         for (int i = 0; i < rlength; i++) {
           var data = StockMainListDataModal.fromJson(responsedata[i]);
-          stocksummary!.add(StockMainListDataModal(
-              data.item,
-              data.color,
-              data.size,
-              data.balqty,
-              data.uom,
-              data.storename,
-              data.companyid,
-              data.itemid,
-              data.colorid,
-              data.sizeid,
-              data.storeunitid,
-              data.orderno,
-              data.refno,
-              data.style,
-              data.transno));
+
+          // Create a unique key for the group by item, size, and color
+          String key = "${data.item}-${data.size}-${data.color}";
+
+          if (groupedItems.containsKey(key)) {
+            // Add a null check before adding balqty
+            groupedItems[key]!.balqty =
+                (groupedItems[key]!.balqty ?? 0) + (data.balqty ?? 0);
+          } else {
+            // Create a new entry with null-safe balqty
+            groupedItems[key] = StockMainListDataModal(
+                data.item,
+                data.color,
+                data.size,
+                data.balqty ?? 0, // Ensure balqty is non-null
+                data.uom,
+                data.storename,
+                data.companyid,
+                data.itemid,
+                data.colorid,
+                data.sizeid,
+                data.storeunitid,
+                data.orderno,
+                data.refno,
+                data.style,
+                data.transno);
+          }
         }
+
+        // Clear existing summary and add grouped items
+        stocksummary!.clear();
+        stocksummary!.addAll(groupedItems.values);
+
         setState(() {
           listlenth = stocksummary!.length;
           stocksummaryfilter!.addAll(stocksummary!);
         });
-      } else {}
+      } else {
+        // Handle non-200 responses here
+      }
     } catch (ex) {
       throw ex.toString();
     }
