@@ -1,4 +1,5 @@
 import 'package:apparelapp/supplieroutstanding/processoutstanding.dart';
+import 'package:apparelapp/supplieroutstanding/productionoutstanding.dart';
 import 'package:apparelapp/supplieroutstanding/purchase/purchasesummary.dart';
 import 'package:flutter/material.dart';
 
@@ -56,7 +57,12 @@ class _MainOutstandingListState extends State<MainOutstandingList> {
                 child: ListTile(
               leading: const Icon(Icons.local_shipping_outlined),
               title: const Text("Production"),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: ((context) => const ProductionOutstanding())));
+              },
             )),
           ],
         ));
